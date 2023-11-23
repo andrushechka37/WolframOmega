@@ -1,8 +1,13 @@
 #include <stdlib.h>
 #include <stdio.h>
-#include <string.h>
 #include "deff.h"
+#include "deff_dump.h"
 
+// reader------------hard
+// verificator
+// tree calc
+// variables
+// no brackets
 
 deff_tree_element * node_ctor(double value, int type) {
     deff_tree_element * element = (deff_tree_element *) calloc(1, sizeof(deff_tree_element));
@@ -19,7 +24,7 @@ void tie_child_node(elem_ptr * parent, double value, int type) {        // it li
 }
 
 int tree_ctor(deff_tree * tree) {
-    tree->root = node_ctor(0, 0);
+    tree->root = node_ctor(0, 1);
     tree->size = 0;
     return 0;
 }
@@ -38,9 +43,9 @@ int main(void) {
 }
 
 
-char get_op_sign(int op_num) {
+char get_op_sign(double op_num) {
     char op_sign  = '0';
-    switch (op_num)
+    switch ((int)op_num)
     {
     case OP_ADD:
         op_sign = '+';
@@ -66,23 +71,19 @@ char get_op_sign(int op_num) {
     return op_sign;
 }
 
-void print_tree_inorder(deff_tree_element * root) {
-    if (root == NULL) {       //         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-        printf("_");
-        return;
-    }
-    printf("(");
-    print_tree_inorder(root->left);
-    if (root->type == value_t) {
-        printf("%.2lf", root->value);
-    } else if ((int)root->type == operator_t) {
-        printf("%c", get_op_sign((int)root->value));
-    }
-    
-    print_tree_inorder(root->right);
-    printf(")");
-    return;
-}
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 // static bool check_symbol(char symbol, FILE * pfile) {
 //     char check_char = '0';
@@ -99,9 +100,19 @@ void print_tree_inorder(deff_tree_element * root) {
 
 
 
-// int read_data(char * data = "data.txt") {
-//     FILE * pfile = fopen(data, "r");
-//     int read_node_akinator(akinator_element ** node, FILE * pfile, char * text) {
+// int read_node(elem_ptr * node, FILE * pfile, double value, int type) {
+//     tie_child_node(node, value, type);
+
+//     if (fscanf(pfile, "(%lf", value) == 1) {
+//         read_node(&((*node)->left), pfile, value, 1)
+//     } else if (fscanf(pfile, "(%c", (char)value) == 1) {
+//         read_node(&((*node)->left), pfile, value, 2);
+//     }
+// }
+
+
+
+// int read_node_akinator(akinator_element ** node, FILE * pfile, char * text) {
 //     akinator_add_descendant(node, text);
 //     char check_char = '0';
 //     check_symbol('>');
@@ -121,6 +132,14 @@ void print_tree_inorder(deff_tree_element * root) {
 //     check_symbol(')');
 //     return 0; 
 // }
+
+// int read_data_akinator(akinator_tree * tree) {
+//     FILE * pfile = fopen("data.txt", "rb");
+//     char text[text_len] = {};
+//     fscanf(pfile, "(<%[^>]s", text);
+//     read_node_akinator(&(tree->root), pfile, text);
+//     fclose(pfile);
+//     return 0;
 // }
 
 
@@ -128,73 +147,3 @@ void print_tree_inorder(deff_tree_element * root) {
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-static void print_graph_arrows(deff_tree_element * element, FILE * pfile) {
-    if (element->left != NULL) {
-        fprintf(pfile, "\t%d->%d [color = \"#22f230\"];\n", element, element->left);
-        print_graph_arrows(element->left, pfile);
-    }
-
-    if (element->right != NULL) {
-        fprintf(pfile, "\t%d->%d [color = \"orange\"];\n", element, element->right);
-        print_graph_arrows(element->right, pfile);
-    }
-    return;
-}
-
-static void print_graph_node(deff_tree_element * element, FILE * pfile, int rank) {
-    fprintf(pfile, "\t%d[shape=Mrecord,style=filled, fillcolor=\"#7293ba\", rank = %d," 
-                   "label=\"{name: %p | {value: %.2lf | type: %d} | {left: %p | right: %p}}\"];\n", element, rank, element, element->value, 
-                                                                    element->type, element->left, element->right);
-    if (element->left != NULL) {
-        print_graph_node(element->left, pfile, ++rank);
-    }
-
-    if (element->right != NULL) {
-        print_graph_node(element->right, pfile, ++rank);
-    }
-    return;
-}
-
-void tree_visualize(deff_tree * tree) {
-    FILE * pfile = fopen("graph.dot", "w");
-    fprintf(pfile, "digraph structs {\n");
-    fprintf(pfile, "\trankdir=HR;\n");
-    fprintf(pfile, "\tgraph [bgcolor=\"#31353b\"]\n");
-    fprintf(pfile, "\tnode[color=\"black\",fontsize=14];\n");
-    fprintf(pfile, "\tedge[color=\"darkgreen\",fontcolor=\"blue\",fontsize=12,  width=0.4];\n\n\n");
-
-    print_graph_node(tree->root, pfile, 1);
-
-    fprintf(pfile, "\n\n\n\n");
-    
-    print_graph_arrows(tree->root, pfile);
-
-    fprintf(pfile, "\n\n\n}");
-    fclose(pfile);
-    system("dot -Tpng ./graph.dot -o graph.png");
-}

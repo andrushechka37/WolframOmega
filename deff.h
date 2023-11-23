@@ -1,4 +1,4 @@
-
+#pragma once
 struct deff_tree_element {
     double value;
     int type;
@@ -13,13 +13,15 @@ struct deff_tree {
 
 const int op_name_len = 10;
 
-typedef deff_tree_element * elem_ptr;
+typedef deff_tree_element* elem_ptr;
 
 
+char get_op_sign(double op_num);
+deff_tree_element * node_ctor(double value, int type);
 
-void tree_visualize(deff_tree * tree);
-
-void print_tree_inorder(deff_tree_element * root);
+void tie_child_node(elem_ptr * parent, double value, int type);
+int tree_ctor(deff_tree * tree);
+char get_op_sign(double op_num);
 
 enum operations {
     OP_ADD = 1,
