@@ -24,7 +24,7 @@ void tie_child_node(elem_ptr * parent, double value, int type) {        // it li
 }
 
 int tree_ctor(deff_tree * tree) {
-    tree->root = node_ctor(0, 1);
+    tree->root = node_ctor(47, 2);
     tree->size = 0;
     return 0;
 }
@@ -34,9 +34,10 @@ int main(void) {
     tree_ctor(&tree);
     tie_child_node(&(tree.root->left), 12, 1);
     tie_child_node(&(tree.root->right), 21, 1);
-    tie_child_node(&(tree.root->left->left), 1, 2);
+    tie_child_node(&(tree.root->left->left), 43, 2);
     tie_child_node(&(tree.root->left->left->left), 41, 1);
     tie_child_node(&(tree.root->left->right), 363, 1);
+    //read_data(&tree);
     print_tree_inorder(tree.root);
 
     tree_visualize(&tree);
@@ -85,65 +86,51 @@ char get_op_sign(double op_num) {
 
 
 
-// static bool check_symbol(char symbol, FILE * pfile) {
-//     char check_char = '0';
-//     fscanf(pfile, "%c", &check_char);
-//     if (check_char != symbol) {                           
-//         printf("syntax error %c\n", check_char);          
-//         return 0;                                         
-//     } 
-//     fscanf(pfile, "%c", &check_char);                     
-//     if (check_char != '\n') {                            
-//         ungetc(check_char, pfile);          
-//     }
-// }
+static bool check_symbol(char symbol, FILE * pfile) {
+    char check_char = '0';
+    fscanf(pfile, "%c", &check_char);
+    if (check_char != symbol) {                           
+        printf("syntax error %c\n", check_char);          
+        return 0;                                         
+    } 
+    fscanf(pfile, "%c", &check_char);                     
+    if (check_char != '\n') {                            
+        ungetc(check_char, pfile);          
+    }
+    return 1;
+}
 
 
 
-// int read_node(elem_ptr * node, FILE * pfile, double value, int type) {
-//     tie_child_node(node, value, type);
+int read_node(elem_ptr * node, FILE * pfile, double value, int type) {
+    inscect_symbol('(', pfile);
+    if (fscanf(pfile, "(%lf", &value) == 1) {
+        read_node(&((*node)->left), pfile, value, 1);
+    } else if (fscanf(pfile, "(%c", (char *) &value) == 1) {
+        read_node(&((*node)->left), pfile, value, 2);
+    } else {
+        inscect_symbol('_', pfile);
+    }
 
-//     if (fscanf(pfile, "(%lf", value) == 1) {
-//         read_node(&((*node)->left), pfile, value, 1)
-//     } else if (fscanf(pfile, "(%c", (char)value) == 1) {
-//         read_node(&((*node)->left), pfile, value, 2);
-//     }
-// }
+    tie_child_node(node, value, type);
 
+    if (fscanf(pfile, "(%lf", &value) == 1) {
+        read_node(&((*node)->right), pfile, value, 1);
+    } else if (fscanf(pfile, "(%c", (char *)&value) == 1) {
+        read_node(&((*node)->right), pfile, value, 2);
+    } else {
+        inscect_symbol('_', pfile);
+    }
 
+    inscect_symbol(')', pfile);
+    return 0;
+}
 
-// int read_node_akinator(akinator_element ** node, FILE * pfile, char * text) {
-//     akinator_add_descendant(node, text);
-//     char check_char = '0';
-//     check_symbol('>');
-//     if (fscanf(pfile, "(<%[^>]s", text) == 1) {
-//         text[strcspn(text, "\n")] = '\0';
-//         read_node_akinator(&((*node)->left), pfile, text);
-//     } else {
-//         check_symbol('*');
-//     }
-
-//     if (fscanf(pfile, "(<%[^>]s", text) == 1) {
-//         text[strcspn(text, "\n")] = '\0';
-//         read_node_akinator(&((*node)->right), pfile, text);
-//     } else {
-//         check_symbol('*');
-//     }
-//     check_symbol(')');
-//     return 0; 
-// }
-
-// int read_data_akinator(akinator_tree * tree) {
-//     FILE * pfile = fopen("data.txt", "rb");
-//     char text[text_len] = {};
-//     fscanf(pfile, "(<%[^>]s", text);
-//     read_node_akinator(&(tree->root), pfile, text);
-//     fclose(pfile);
-//     return 0;
-// }
-
-
-
-
-
-
+int read_data(deff_tree * tree, char * filename) {
+    FILE * pfile = fopen(filename, "r");
+    char op = '0';
+    fscanf(pfile, "(%c", &op);
+    read_node(&(tree->root), pfile, (double)op, 2);
+    fclose(pfile);
+    return 0;
+}

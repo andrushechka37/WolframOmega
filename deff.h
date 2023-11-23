@@ -24,10 +24,10 @@ int tree_ctor(deff_tree * tree);
 char get_op_sign(double op_num);
 
 enum operations {
-    OP_ADD = 1,
-    OP_SUB = 2,
-    OP_MUL = 3,
-    OP_DIV = 4
+    OP_ADD = 43,
+    OP_SUB = 45,
+    OP_MUL = 42,
+    OP_DIV = 47
 };
 
 enum types_of_node {
@@ -35,3 +35,12 @@ enum types_of_node {
     operator_t = 2,
     variable_t = 3
 };
+
+
+#define inscect_symbol(symbol, pfile)         \
+    if (check_symbol(symbol, pfile) == 0) {   \
+        return 0;                             \
+    }
+
+int read_node(elem_ptr * node, FILE * pfile, double value, int type);
+int read_data(deff_tree * tree, char * filename = "data.txt");
