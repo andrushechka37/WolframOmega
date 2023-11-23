@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 #include "deff.h"
 
 
@@ -27,14 +28,61 @@ int main(void) {
     deff_tree tree = {};
     tree_ctor(&tree);
     tie_child_node(&(tree.root->left), 12, 1);
-    tie_child_node(&(tree.root->right), 21, 2);
-    tie_child_node(&(tree.root->left->left), 31, 3);
-    tie_child_node(&(tree.root->left->left->left), 41, 3);
-    tie_child_node(&(tree.root->left->right), 363, 3);
+    tie_child_node(&(tree.root->right), 21, 1);
+    tie_child_node(&(tree.root->left->left), 1, 2);
+    tie_child_node(&(tree.root->left->left->left), 41, 1);
+    tie_child_node(&(tree.root->left->right), 363, 1);
+    print_tree_inorder(tree.root);
 
     tree_visualize(&tree);
 }
 
+
+char get_op_sign(int op_num) {
+    char op_sign  = '0';
+    switch (op_num)
+    {
+    case OP_ADD:
+        op_sign = '+';
+        break;
+    
+    case OP_SUB:
+        op_sign = '-';
+        break;
+
+    case OP_MUL:
+        op_sign = '*';
+        break;
+    
+    case OP_DIV:
+        op_sign = '/';
+        break;
+
+    default:
+        op_sign = '0';
+        break;
+    }
+
+    return op_sign;
+}
+
+void print_tree_inorder(deff_tree_element * root) {
+    if (root == NULL) {       //         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        printf("_");
+        return;
+    }
+    printf("(");
+    print_tree_inorder(root->left);
+    if (root->type == value_t) {
+        printf("%.2lf", root->value);
+    } else if ((int)root->type == operator_t) {
+        printf("%c", get_op_sign((int)root->value));
+    }
+    
+    print_tree_inorder(root->right);
+    printf(")");
+    return;
+}
 
 // static bool check_symbol(char symbol, FILE * pfile) {
 //     char check_char = '0';
@@ -120,8 +168,8 @@ static void print_graph_arrows(deff_tree_element * element, FILE * pfile) {
 
 static void print_graph_node(deff_tree_element * element, FILE * pfile, int rank) {
     fprintf(pfile, "\t%d[shape=Mrecord,style=filled, fillcolor=\"#7293ba\", rank = %d," 
-                   "label=\"{value: %.2lf | left: %p} | {type: %d  | right: %p}\"];\n", element, rank, element->value, 
-                                                                    element->left, element->type, element->right);
+                   "label=\"{name: %p | {value: %.2lf | type: %d} | {left: %p | right: %p}}\"];\n", element, rank, element, element->value, 
+                                                                    element->type, element->left, element->right);
     if (element->left != NULL) {
         print_graph_node(element->left, pfile, ++rank);
     }
