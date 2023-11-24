@@ -69,7 +69,12 @@ void tree_visualize(deff_tree * tree) {
     fprintf(pfile, "digraph structs {\n");
     fprintf(pfile, "\trankdir=HR;\n");
     fprintf(pfile, "\tgraph [bgcolor=\"#31353b\"]\n");
-    fprintf(pfile, "\tnode[color=\"black\",fontsize=14];\n");
+    if (hard_visualize == 1) {
+        fprintf(pfile, "\tnode[color=\"black\",fontsize=14];\n");
+    } else {
+        fprintf(pfile, "\tnode[color=\"black\",fontsize=18];\n");
+    }
+
     fprintf(pfile, "\tedge[color=\"darkgreen\",fontcolor=\"blue\",fontsize=12,  width=0.4];\n\n\n");
 
     print_graph_node(tree->root, pfile, 1);

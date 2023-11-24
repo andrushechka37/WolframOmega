@@ -14,6 +14,7 @@ struct deff_tree {
 const int op_name_len = 10;
 
 typedef deff_tree_element* elem_ptr;
+const char nil = '_';
 
 
 char get_op_sign(double op_num);
@@ -36,11 +37,11 @@ enum types_of_node {
     variable_t = 3
 };
 
-
-#define inscect_symbol(symbol, pfile)         \
-    if (check_symbol(symbol, pfile) == 0) {   \
-        return 0;                             \
-    }
+   
+#define inscect_symbol(symbol)                   \
+    if (check_symbol(symbol, pfile) == 0) {      \
+        return 0;                                \
+    }                                            \
 
 int read_node(elem_ptr * node, FILE * pfile, double value, int type);
 int read_data(deff_tree * tree, char * filename = "data.txt");
