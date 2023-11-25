@@ -4,18 +4,20 @@
 #include "deff_dump.h"
 #include <string.h>  // delete
 
-// verificator upgrade
-
-// tree calc
-// variables
-// no brackets
-// tex outoup
-// single ops
-                           // deff itself
+// tex outoup  rewrite 
 // dtor
 
+// stop and think
+// rewrite getting argunent dtom data scanf[^(]  // array of structures
+// tree calc
 
-int error = 0;
+// verificator upgrade           // add check for single ops
+// variables
+// deff itself
+                
+
+// dsl
+int error_status = 0;
 
 static bool check_symbol(char symbol, FILE * pfile);
 
@@ -50,15 +52,17 @@ int main(void) {
     // tie_child_node(&(tree.root->left->left->left), 41, 1);
     // tie_child_node(&(tree.root->left->right), 363, 1);
     read_data(&tree);
-    print_tree_inorder(tree.root);
+    //print_tree_inorder(tree.root);
+    //print_in_pretty_way(tree.root);
 
     tree_visualize(tree.root);
     html_dump();
-    verify(tree.root);
+    //verify(tree.root);
+    print_tex_single_equation(tree.root);
 }
 
 
-char get_op_sign(double op_num) {
+char get_op_symbol(double op_num) {
     char op_sign  = '0';
     switch ((int)op_num)
     {
@@ -73,10 +77,27 @@ char get_op_sign(double op_num) {
     case OP_MUL:
         op_sign = '*';
         break;
-    
+
     case OP_DIV:
         op_sign = '/';
         break;
+    
+    case OP_SQRT:
+        op_sign = 'v';
+        break;
+
+    case OP_SIN:
+        op_sign = 's';
+        break;
+    
+    case OP_COS:
+        op_sign = 'c';
+        break;
+
+    case OP_POW:
+        op_sign = '^';
+        break;
+
 
     default:
         op_sign = '0';
@@ -85,10 +106,41 @@ char get_op_sign(double op_num) {
 
     return op_sign;
 }
-
-
-
-
+double get_op_number(char op_symbol) {
+    double number = 0;
+    switch (op_symbol)
+    {
+    case '+':
+        number = OP_ADD;
+        break;
+    case '-':
+        number = OP_SUB;
+        break;
+    case '*':
+        number = OP_MUL;
+        break;
+    case '/':
+        number = OP_DIV;
+        break;
+    
+    case 'v':
+        number = OP_SQRT;
+        break;
+    case 's':
+        number = OP_SIN;
+        break;
+    case 'c':
+        number = OP_COS;
+        break;
+    case '^':
+        number = OP_POW;
+        break;
+    default:
+        number = 0;
+        break;
+    }
+    return number;
+}
 
 
 int read_node(elem_ptr * link, FILE * pfile, elem_ptr * parent) {
@@ -104,7 +156,7 @@ int read_node(elem_ptr * link, FILE * pfile, elem_ptr * parent) {
             (*link)->value = value;
         } else if (fscanf(pfile, "%c", &op) == 1) {
             (*link)->type = 2;
-            (*link)->value = (double)op;        // do new func for set type and value
+            (*link)->value = get_op_number(op);        // do new func for set type and value
         }
 
         read_node(&((*link)->right), pfile, link);
@@ -114,12 +166,6 @@ int read_node(elem_ptr * link, FILE * pfile, elem_ptr * parent) {
         return 0;
     }
 }
-
-
-
-
-
-
 
 
 static bool check_symbol(char symbol, FILE * pfile) {
@@ -157,22 +203,93 @@ int tree_verify(deff_tree_element * element) {
     if (element->type == value_t) {
         if (element->left != NULL || element->right != NULL) {
             printf("%p number does not have all nulls", element);
-            error = 1;
+            error_status = 1;
         }
     } else if ((int)element->type == operator_t) {
         if (element->left == NULL || element->right == NULL) {
             printf("%p op does not have all numbers", element);
-            error = 1;
+            error_status = 1;
         }
     }
     tree_verify(element->right);
-    if (error == 1) {
+    if (error_status == 1) {
         return 1;
     }
     return 0;
 }
 
+bool op_priority(double op1, double op2) {
+    if (((int)op1 & op_priority_mask) < ((int)op2 & op_priority_mask)) {
+        return 1;
+    }
+    return 0;
+}
+void print_in_pretty_way(deff_tree_element * root) {
+    if (root == NULL) {     
+        return;
+    }
+    if (root->type != value_t && (op_priority(root->value, root->parent->value) == 1)) {
+        printf("(");
+    }
+    print_in_pretty_way(root->left);
+    if (root->type == value_t) {
+        printf("%.2lf", root->value);
+    } else if ((int)root->type == operator_t) {
+        printf("%c", get_op_symbol(root->value));
+    }
+    
+    print_in_pretty_way(root->right);
+    if (root->type != value_t && (op_priority(root->value, root->parent->value) == 1)) {
+        printf(")");
+    }
+    return;
+}
 
+void print_tex_single_equation(deff_tree_element * root) {
+    if (root == NULL) {     
+        return;
+    }
 
+    if (root->value == OP_DIV) {
+        printf("\\frac{");
+    }
 
+    if (root->type != value_t && (op_priority(root->value, root->parent->value) == 1)) {
+        printf("(");
+    }
+    print_tex_single_equation(root->left);
+    if (root->type == value_t) {
+        if ((int)root->parent->value == OP_POW) {
+            printf("{%.2lf}", root->value);
+        } else {
+            printf("%.2lf", root->value);
+        }
+    } else if ((int)root->type == operator_t && (int)root->value != OP_DIV) {
+        if ((int)root->value == OP_POW || (int)root->value == OP_SQRT) {}
+        printf("%c", get_op_symbol(root->value));
+    }
 
+    if (root->value == OP_DIV) {
+        printf("}{");
+    }
+    
+    print_tex_single_equation(root->right);
+    if (root->type != value_t && (op_priority(root->value, root->parent->value) == 1)) {
+        printf(")");
+    }
+
+    if (root->value == OP_DIV) {
+        printf("}");
+    }
+    return;
+}
+void print_tex(deff_tree_element * root) {
+    FILE * pfile = fopen("output.tex", "w");
+    fprintf(pfile, "\\documentclass{article}\n" 
+                   "\\begin{document}\n");
+    
+
+    
+    fprintf(pfile, "\n\\end{document}");
+
+}

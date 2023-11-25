@@ -16,7 +16,7 @@ void print_tree_inorder(deff_tree_element * root) {
     if (root->type == value_t) {
         printf("%.2lf", root->value);
     } else if ((int)root->type == operator_t) {
-        printf("%c", get_op_sign(root->value));
+        printf("%c", get_op_symbol(root->value));
     }
     
     print_tree_inorder(root->right);
@@ -51,7 +51,7 @@ static void print_graph_node(deff_tree_element * element, FILE * pfile, int rank
                    "label=\"%.2lf\"];\n", element, rank, element->value);
         } else if (element->type == 2) {
             fprintf(pfile, "\t%d[shape=circle,style=filled, fillcolor=\"#f77ca3\", rank = %d," 
-                   "label=\"%c\"];\n", element, rank, get_op_sign(element->value));
+                   "label=\"%c\"];\n", element, rank, get_op_symbol(element->value));
         }
 
     }
@@ -90,7 +90,7 @@ void tree_visualize(deff_tree_element * element) {
 }
 
 
-void create_new_graph(void) {  // TODO: temporary files, hardcode of path
+void create_new_graph(void) {  // not tmp files, but better than previous hardcode of path
     char command1[command_len] = "dot -Tpng ./graph.dot -o graphs/graph";
     char command2[] = ".png";
     char graph_number_str[2] = {};
