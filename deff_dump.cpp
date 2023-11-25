@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include "deff_dump.h"
+#include <string.h>
 static void print_graph_arrows(deff_tree_element * element, FILE * pfile);
 static void print_graph_node(deff_tree_element * element, FILE * pfile, int rank);
 
@@ -41,8 +42,8 @@ static void print_graph_arrows(deff_tree_element * element, FILE * pfile) {
 static void print_graph_node(deff_tree_element * element, FILE * pfile, int rank) {
     if (hard_visualize == 1) {                              // i know copypast, but i thuink it is not critical,
         fprintf(pfile, "\t%d[shape=Mrecord,style=filled, fillcolor=\"#7293ba\", rank = %d,"  // it is for better understanding
-                   "label=\"{name: %p | {value: %.2lf | type: %d} | {left: %p | right: %p}}\"];\n", 
-                   element, rank, element, element->value, 
+                   "label=\"{parent: %p | name: %p | {value: %.2lf | type: %d} | {left: %p | right: %p}}\"];\n", 
+                   element, rank, element->parent, element, element->value, 
                  element->type, element->left, element->right);
     } else {
         if (element->type == 1) {
@@ -64,7 +65,7 @@ static void print_graph_node(deff_tree_element * element, FILE * pfile, int rank
     return;
 }
 
-void tree_visualize(deff_tree * tree) {
+void tree_visualize(deff_tree_element * element) {
     FILE * pfile = fopen("graph.dot", "w");
     fprintf(pfile, "digraph structs {\n");
     fprintf(pfile, "\trankdir=HR;\n");
@@ -77,13 +78,45 @@ void tree_visualize(deff_tree * tree) {
 
     fprintf(pfile, "\tedge[color=\"darkgreen\",fontcolor=\"blue\",fontsize=12,  width=0.4];\n\n\n");
 
-    print_graph_node(tree->root, pfile, 1);
+    print_graph_node(element, pfile, 1);
 
     fprintf(pfile, "\n\n\n\n");
     
-    print_graph_arrows(tree->root, pfile);
+    print_graph_arrows(element, pfile);
 
     fprintf(pfile, "\n\n\n}");
     fclose(pfile);
-    system("dot -Tpng ./graph.dot -o graph.png");
+    create_new_graph();
+}
+
+
+void create_new_graph(void) {  // TODO: temporary files, hardcode of path
+    char command1[command_len] = "dot -Tpng ./graph.dot -o graphs/graph";
+    char command2[] = ".png";
+    char graph_number_str[2] = {};
+
+    snprintf(graph_number_str, 2,  "%d", graph_number);
+    strcat(command1, graph_number_str);
+    strcat(command1, command2);
+    system(command1);
+    graph_number++;
+}
+
+void html_dump(void) {
+    FILE * pfile = fopen("log.html", "w"); // 
+
+    fprintf(pfile, "<hr/>\n");
+    fprintf(pfile, "<head>\n");
+    fprintf(pfile, "\t<title>megalogg</title>\n");
+    fprintf(pfile, "</head>\n");
+    fprintf(pfile, "<body bgcolor=\"#a2a8a8\">\n");
+    for (int i = 1; i < graph_number; i++) {
+        fprintf(pfile, "<img src = \"/Users/anzhiday/Documents/WolframOmega/graphs/graph");
+        fprintf(pfile, "%d", i);
+        fprintf(pfile, ".png\">\n");
+        fprintf(pfile,"<br><br><br><br>\n");
+    }
+    fprintf(pfile, "</body>\n");
+    fclose(pfile);
+    
 }
