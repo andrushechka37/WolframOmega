@@ -28,12 +28,12 @@ void print_tree_inorder(deff_tree_element * root) {
 
 static void print_graph_arrows(deff_tree_element * element, FILE * pfile) {
     if (element->left != NULL) {
-        fprintf(pfile, "\t%d->%d [color = \"#22f230\"];\n", element, element->left);
+        fprintf(pfile, "\t%d->%d [color = \"#0ae7ff\"];\n", element, element->left);
         print_graph_arrows(element->left, pfile);
     }
 
     if (element->right != NULL) {
-        fprintf(pfile, "\t%d->%d [color = \"orange\"];\n", element, element->right);
+        fprintf(pfile, "\t%d->%d [color = \"#f0ff4f\"];\n", element, element->right);
         print_graph_arrows(element->right, pfile);
     }
     return;
@@ -50,7 +50,7 @@ static void print_graph_node(deff_tree_element * element, FILE * pfile, int rank
             fprintf(pfile, "\t%d[shape=Mrecord,style=filled, fillcolor=\"#7293ba\", rank = %d," 
                    "label=\"%.2lf\"];\n", element, rank, element->value);
         } else if (element->type == 2) {
-            fprintf(pfile, "\t%d[shape=circle,style=filled, fillcolor=\"#f77ca3\", rank = %d," 
+            fprintf(pfile, "\t%d[shape=circle,style=filled, fillcolor=\"#b481f7\", rank = %d," 
                    "label=\"%c\"];\n", element, rank, get_op_symbol(element->value));
         }
 

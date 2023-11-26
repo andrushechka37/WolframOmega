@@ -4,10 +4,8 @@
 #include "deff_dump.h"
 #include <string.h>  // delete
 
-// tex outoup  rewrite 
 // dtor
 
-// stop and think
 // rewrite getting argunent dtom data scanf[^(]  // array of structures
 // tree calc
 
@@ -46,19 +44,15 @@ int tree_ctor(deff_tree * tree) {
 int main(void) {
     deff_tree tree = {};
     tree_ctor(&tree);
-    // tie_child_node(&(tree.root->left), 12, 1);
-    // tie_child_node(&(tree.root->right), 21, 1);
-    // tie_child_node(&(tree.root->left->left), 43, 2);
-    // tie_child_node(&(tree.root->left->left->left), 41, 1);
-    // tie_child_node(&(tree.root->left->right), 363, 1);
     read_data(&tree);
+
     //print_tree_inorder(tree.root);
     //print_in_pretty_way(tree.root);
 
     tree_visualize(tree.root);
     html_dump();
     //verify(tree.root);
-    print_tex_single_equation(tree.root);
+    print_tex(tree.root);
 }
 
 
@@ -143,10 +137,10 @@ double get_op_number(char op_symbol) {
 }
 
 
-int read_node(elem_ptr * link, FILE * pfile, elem_ptr * parent) {
+int read_node_data(elem_ptr * link, FILE * pfile, elem_ptr * parent) {
     if (check_symbol('(', pfile) == 1) {
         tie_child_node(link, 0, 0, parent);
-        read_node(&((*link)->left), pfile, link);
+        read_node_data(&((*link)->left), pfile, link);
 
         double value = 0;
         char op = '0';
@@ -159,7 +153,7 @@ int read_node(elem_ptr * link, FILE * pfile, elem_ptr * parent) {
             (*link)->value = get_op_number(op);        // do new func for set type and value
         }
 
-        read_node(&((*link)->right), pfile, link);
+        read_node_data(&((*link)->right), pfile, link);
         inscect_symbol(')');
 
     } else if (check_symbol(nil, pfile) == 1) {
@@ -189,7 +183,8 @@ static bool check_symbol(char symbol, FILE * pfile) {
 
 int read_data(deff_tree * tree, char * filename) {
     FILE * pfile = fopen(filename, "r");
-    read_node(&(tree->root), pfile, &(tree->root));
+    null_ptr_file;
+    read_node_data(&(tree->root), pfile, &(tree->root));
     fclose(pfile);
     return 0;
 }
@@ -245,51 +240,50 @@ void print_in_pretty_way(deff_tree_element * root) {
     return;
 }
 
-void print_tex_single_equation(deff_tree_element * root) {
+void print_tex_single_equation(deff_tree_element * root, FILE * pfile) {
     if (root == NULL) {     
         return;
     }
 
     if (root->value == OP_DIV) {
-        printf("\\frac{");
+        fprintf(pfile, "\\frac{");
     }
 
-    if (root->type != value_t && (op_priority(root->value, root->parent->value) == 1)) {
-        printf("(");
+    if (root->type != value_t && (op_priority(root->value, root->parent->value) == 1)) { // maybe define
+        fprintf(pfile,"(");
     }
-    print_tex_single_equation(root->left);
+    print_tex_single_equation(root->left, pfile);
     if (root->type == value_t) {
         if ((int)root->parent->value == OP_POW) {
-            printf("{%.2lf}", root->value);
+            fprintf(pfile,"{%.2lf}", root->value);
         } else {
-            printf("%.2lf", root->value);
+            fprintf(pfile,"%.2lf", root->value);
         }
     } else if ((int)root->type == operator_t && (int)root->value != OP_DIV) {
         if ((int)root->value == OP_POW || (int)root->value == OP_SQRT) {}
-        printf("%c", get_op_symbol(root->value));
+        fprintf(pfile,"%c", get_op_symbol(root->value));
     }
 
     if (root->value == OP_DIV) {
-        printf("}{");
+        fprintf(pfile,"}{");
     }
     
-    print_tex_single_equation(root->right);
+    print_tex_single_equation(root->right, pfile);
     if (root->type != value_t && (op_priority(root->value, root->parent->value) == 1)) {
-        printf(")");
+        fprintf(pfile,")");
     }
 
     if (root->value == OP_DIV) {
-        printf("}");
+       fprintf(pfile,"}");
     }
     return;
 }
-void print_tex(deff_tree_element * root) {
-    FILE * pfile = fopen("output.tex", "w");
-    fprintf(pfile, "\\documentclass{article}\n" 
-                   "\\begin{document}\n");
-    
-
-    
-    fprintf(pfile, "\n\\end{document}");
+int print_tex(deff_tree_element * root, char * file_name) {
+    FILE * pfile = fopen(file_name, "w");
+    null_ptr_file;
+    fprintf(pfile, "$$");
+    print_tex_single_equation(root, pfile);
+    fprintf(pfile, "$$");
+    fclose(pfile);
 
 }

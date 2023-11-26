@@ -43,7 +43,11 @@ enum types_of_node {
         return 0;                        \
     }
 
-
+#define null_ptr_file          \
+    if (pfile == NULL) {       \
+        printf("open error");  \
+        return 0;              \
+    }
 const int op_priority_mask = 240;
 
 const int op_name_len = 10;
@@ -61,10 +65,11 @@ int tree_ctor(deff_tree * tree);
 char get_op_symbol(double op_num);          // maybe static
 double get_op_number(char op_symbol);
 
-int read_node(elem_ptr * link, FILE * pfile, elem_ptr * parent);
+int read_node_data(elem_ptr * link, FILE * pfile, elem_ptr * parent);
 int read_data(deff_tree * tree, char * filename = "data.txt");
 
 int tree_verify(deff_tree_element * element);
 void print_in_pretty_way(deff_tree_element * root);
-void print_tex_single_equation(deff_tree_element * root);
-void print_tex_single_equation(deff_tree_element * root);
+void print_tex_single_equation(deff_tree_element * root, FILE * pfile);
+
+int print_tex(deff_tree_element * root, char * file_name = "tex.md");
