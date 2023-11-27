@@ -13,6 +13,14 @@ struct deff_tree {
     int size;
 };
 
+const int op_name_len = 10;
+const int op_count = 8;
+
+struct op_names_numbers_t {
+    const double number;
+    const char name[op_name_len];
+};
+
 enum operations {
     OP_ADD  = 17,   // 0001|0001     |
     OP_SUB  = 18,   // 0001|0010     |
@@ -50,19 +58,24 @@ enum types_of_node {
     }
 const int op_priority_mask = 240;
 
-const int op_name_len = 10;
+
 const char nil = '_';
 
 typedef deff_tree_element* elem_ptr;
 
+#define is_bracket                                                     \
+    (root->type == operator_t) &&                                         \
+    (root->parent->type == operator_t) && \
+    (op_priority(root->value, root->parent->value) == 1)                 \
 
-void tie_child_node(elem_ptr * link, double value, int type, elem_ptr * parent);
-deff_tree_element * node_ctor(double value, int type);
+
+void tie_child_node(elem_ptr * link, double value, types_of_node type, elem_ptr parent);
+deff_tree_element * node_ctor(double value, types_of_node type);
 
 int tree_ctor(deff_tree * tree);
+void tree_dtor(elem_ptr * root);
 
-
-char get_op_symbol(double op_num);          // maybe static
+const char * get_op_symbol(double op_num);          // maybe static
 double get_op_number(char op_symbol);
 
 int read_node_data(elem_ptr * link, FILE * pfile, elem_ptr * parent);

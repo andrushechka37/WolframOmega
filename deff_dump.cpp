@@ -45,13 +45,16 @@ static void print_graph_node(deff_tree_element * element, FILE * pfile, int rank
                    "label=\"{parent: %p | name: %p | {value: %.2lf | type: %d} | {left: %p | right: %p}}\"];\n", 
                    element, rank, element->parent, element, element->value, 
                  element->type, element->left, element->right);
-    } else {
-        if (element->type == 1) {
+    } else {                                         // ifndef
+        if (element->type == value_t) {
             fprintf(pfile, "\t%d[shape=Mrecord,style=filled, fillcolor=\"#7293ba\", rank = %d," 
-                   "label=\"%.2lf\"];\n", element, rank, element->value);
-        } else if (element->type == 2) {
+                   "label=\"%.2lf\"];\n", element, rank, element->value);  // obertka
+        } else if (element->type == operator_t) {
             fprintf(pfile, "\t%d[shape=circle,style=filled, fillcolor=\"#b481f7\", rank = %d," 
-                   "label=\"%c\"];\n", element, rank, get_op_symbol(element->value));
+                   "label=\"%s\"];\n", element, rank, get_op_symbol(element->value));
+        } else if (element->type == variable_t) {
+            fprintf(pfile, "\t%d[shape=circle,style=filled, fillcolor=\"#f0ab67\", rank = %d," 
+                   "label=\"x\"];\n", element, rank);
         }
 
     }

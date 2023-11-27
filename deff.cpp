@@ -3,23 +3,42 @@
 #include "deff.h"
 #include "deff_dump.h"
 #include <string.h>  // delete
-
-// dtor
-
-// rewrite getting argunent dtom data scanf[^(]  // array of structures
+// struct
 // tree calc
-
-// verificator upgrade           // add check for single ops
-// variables
+// verificator upgrade    
+// add check for single ops
 // deff itself
-                
-
 // dsl
 int error_status = 0;
-
+op_names_numbers_t op_names_numbers[op_count] = {
+        {OP_ADD, "+"},
+        {OP_SUB, "-"},
+        {OP_MUL, "*"},
+        {OP_DIV, "/"},
+        {OP_SQRT, "\\sqrt"},
+        {OP_SIN, "\\sin"},
+        {OP_COS, "\\cos"},
+        {OP_POW, "^"}
+};
 static bool check_symbol(char symbol, FILE * pfile);
 
-deff_tree_element * node_ctor(double value, int type) {
+int main(void) {
+    deff_tree tree = {};
+    tree_ctor(&tree);
+    read_data(&tree);
+
+    //print_tree_inorder(tree.root);
+    print_in_pretty_way(tree.root);
+
+    tree_visualize(tree.root);
+    html_dump();
+    //verify(tree.root);
+    print_tex(tree.root);
+    tree_dtor(&(tree.root));
+    tree_visualize(tree.root);
+}
+
+deff_tree_element * node_ctor(double value, types_of_node type) {
     deff_tree_element * element = (deff_tree_element *) calloc(1, sizeof(deff_tree_element));
     element->type = type;
     element->value = value;
@@ -29,132 +48,50 @@ deff_tree_element * node_ctor(double value, int type) {
     return element;
 }
 
-void tie_child_node(elem_ptr * link, double value, int type, elem_ptr * parent) {        // it like "tie" to the given link
+void tie_child_node(elem_ptr * link, double value, types_of_node type, elem_ptr parent) {        // it like "tie" to the given link
     *link = node_ctor(value, type);
-    (*link)->parent = *parent;
+    (*link)->parent = parent;
     return;
 }
 
 int tree_ctor(deff_tree * tree) {
-    tree->root = node_ctor(47, 2);
+    tree->root = node_ctor(0, value_t);  // it is not null, because in reader must be not null ptr to write there
     tree->size = 0;
     return 0;
 }
 
-int main(void) {
-    deff_tree tree = {};
-    tree_ctor(&tree);
-    read_data(&tree);
-
-    //print_tree_inorder(tree.root);
-    //print_in_pretty_way(tree.root);
-
-    tree_visualize(tree.root);
-    html_dump();
-    //verify(tree.root);
-    print_tex(tree.root);
+const char * get_op_symbol(double op_num) {
+    int i = 0;
+    while (op_num != op_names_numbers[i].number) i++;
+    return op_names_numbers[i].name;
+}
+double get_op_number(char * name) {
+    int i = 0;
+    while (strcmp(op_names_numbers[i].name, name)) i++;
+    return op_names_numbers[i].number;
 }
 
 
-char get_op_symbol(double op_num) {
-    char op_sign  = '0';
-    switch ((int)op_num)
-    {
-    case OP_ADD:
-        op_sign = '+';
-        break;
-    
-    case OP_SUB:
-        op_sign = '-';
-        break;
-
-    case OP_MUL:
-        op_sign = '*';
-        break;
-
-    case OP_DIV:
-        op_sign = '/';
-        break;
-    
-    case OP_SQRT:
-        op_sign = 'v';
-        break;
-
-    case OP_SIN:
-        op_sign = 's';
-        break;
-    
-    case OP_COS:
-        op_sign = 'c';
-        break;
-
-    case OP_POW:
-        op_sign = '^';
-        break;
-
-
-    default:
-        op_sign = '0';
-        break;
-    }
-
-    return op_sign;
-}
-double get_op_number(char op_symbol) {
-    double number = 0;
-    switch (op_symbol)
-    {
-    case '+':
-        number = OP_ADD;
-        break;
-    case '-':
-        number = OP_SUB;
-        break;
-    case '*':
-        number = OP_MUL;
-        break;
-    case '/':
-        number = OP_DIV;
-        break;
-    
-    case 'v':
-        number = OP_SQRT;
-        break;
-    case 's':
-        number = OP_SIN;
-        break;
-    case 'c':
-        number = OP_COS;
-        break;
-    case '^':
-        number = OP_POW;
-        break;
-    default:
-        number = 0;
-        break;
-    }
-    return number;
-}
-
-
-int read_node_data(elem_ptr * link, FILE * pfile, elem_ptr * parent) {
+int read_node_data(elem_ptr * link, FILE * pfile, elem_ptr * parent) {  //more clear
     if (check_symbol('(', pfile) == 1) {
-        tie_child_node(link, 0, 0, parent);
+        tie_child_node(link, 0, value_t, *parent);
         read_node_data(&((*link)->left), pfile, link);
 
         double value = 0;
-        char op = '0';
+        char op[op_name_len] = {};
 
         if (fscanf(pfile, "%lf", &value) == 1) {
             (*link)->type = 1;
             (*link)->value = value;
-        } else if (fscanf(pfile, "%c", &op) == 1) {
-            (*link)->type = 2;
-            (*link)->value = get_op_number(op);        // do new func for set type and value
+        } else if (fscanf(pfile, "%[^(]s", &op) == 1) {
+ 
+                (*link)->type = 2;// enum
+                (*link)->value = get_op_number(op); 
+            //}    
         }
 
         read_node_data(&((*link)->right), pfile, link);
-        inscect_symbol(')');
+        inscect_symbol(')');  // require
 
     } else if (check_symbol(nil, pfile) == 1) {
         return 0;
@@ -219,18 +156,21 @@ bool op_priority(double op1, double op2) {
     }
     return 0;
 }
+
 void print_in_pretty_way(deff_tree_element * root) {
     if (root == NULL) {     
         return;
     }
-    if (root->type != value_t && (op_priority(root->value, root->parent->value) == 1)) {
+    if (root->type != value_t && (op_priority(root->value, root->parent->value) == 1)) {// caps + variable
         printf("(");
     }
     print_in_pretty_way(root->left);
     if (root->type == value_t) {
         printf("%.2lf", root->value);
     } else if ((int)root->type == operator_t) {
-        printf("%c", get_op_symbol(root->value));
+        printf("%s", get_op_symbol(root->value));
+    } else if ((int)root->type == variable_t) {
+        printf("x");
     }
     
     print_in_pretty_way(root->right);
@@ -248,32 +188,38 @@ void print_tex_single_equation(deff_tree_element * root, FILE * pfile) {
     if (root->value == OP_DIV) {
         fprintf(pfile, "\\frac{");
     }
-
-    if (root->type != value_t && (op_priority(root->value, root->parent->value) == 1)) { // maybe define
+    if (is_bracket) {
         fprintf(pfile,"(");
     }
+
     print_tex_single_equation(root->left, pfile);
-    if (root->type == value_t) {
-        if ((int)root->parent->value == OP_POW) {
-            fprintf(pfile,"{%.2lf}", root->value);
+
+    if(root->type == value_t) {
+         fprintf(pfile,"%.2lf", root->value);
+    } else if (root->type == operator_t) {
+        if (((int)root->value != OP_POW) && ((int)root->value != OP_DIV)) {
+            fprintf(pfile,"%s", get_op_symbol(root->value));
         } else {
-            fprintf(pfile,"%.2lf", root->value);
+            switch ((int)root->value) {
+                case OP_POW:
+                    fprintf(pfile,"^{");
+                    break;
+                case OP_DIV:
+                    fprintf(pfile,"}{");
+                    break;
+            }
         }
-    } else if ((int)root->type == operator_t && (int)root->value != OP_DIV) {
-        if ((int)root->value == OP_POW || (int)root->value == OP_SQRT) {}
-        fprintf(pfile,"%c", get_op_symbol(root->value));
+    } else if ((int)root->type == variable_t) {
+        fprintf(pfile, "x");
     }
 
-    if (root->value == OP_DIV) {
-        fprintf(pfile,"}{");
-    }
-    
     print_tex_single_equation(root->right, pfile);
-    if (root->type != value_t && (op_priority(root->value, root->parent->value) == 1)) {
+
+    if (is_bracket) {
         fprintf(pfile,")");
     }
 
-    if (root->value == OP_DIV) {
+    if (root->value == OP_DIV || root->value == OP_POW) {
        fprintf(pfile,"}");
     }
     return;
@@ -285,5 +231,25 @@ int print_tex(deff_tree_element * root, char * file_name) {
     print_tex_single_equation(root, pfile);
     fprintf(pfile, "$$");
     fclose(pfile);
-
 }
+
+void tree_dtor(elem_ptr * root) {
+    if (*root == NULL) {     
+        return;
+    }
+    tree_dtor(&(*root)->left);
+    (*root)->parent = NULL;
+    (*root)->type = 0;
+    (*root)->value= 0;
+    tree_dtor(&(*root)->right);
+    (*root)->right = NULL;
+    (*root)->left = NULL;
+    free(*root);
+    return;
+}
+
+
+
+
+
+
