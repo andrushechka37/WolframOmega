@@ -69,8 +69,11 @@ typedef diff_tree_element* elem_ptr;
     (op_priority(root->value, root->parent->value) == 1)                 \
 
 
-void tie_child_node(elem_ptr * link, double value, types_of_node type, elem_ptr parent);
-diff_tree_element * node_ctor(double value, types_of_node type);
+void tie_child_node(elem_ptr * link,double value, types_of_node type, 
+                    diff_tree_element * left, diff_tree_element * right, elem_ptr parent);
+                    
+diff_tree_element * node_ctor(double value, types_of_node type, diff_tree_element * left, 
+                          diff_tree_element * right, diff_tree_element * parent);
 
 int tree_ctor(diff_tree * tree);
 void tree_dtor(elem_ptr * root);

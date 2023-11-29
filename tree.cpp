@@ -1,8 +1,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include "tree.h"
-#include "deff_dump.h"
-#include <string.h>  // delete
+#include <string.h>
 #include <math.h>
 // tree calc
 
@@ -12,6 +11,8 @@
 // deff itself
 // dsl
 int error_status = 0;
+static bool check_symbol(char symbol, FILE * pfile);
+
 op_names_numbers_t op_names_numbers[op_count] = {
         {OP_ADD, "+"},
         {OP_SUB, "-"},
@@ -22,43 +23,25 @@ op_names_numbers_t op_names_numbers[op_count] = {
         {OP_COS, "\\cos"},
         {OP_POW, "^"}
 };
-static bool check_symbol(char symbol, FILE * pfile);
 
-int main(void) {
-    diff_tree tree = {};
-    tree_ctor(&tree);
-    read_data(&tree);
 
-    //print_tree_inorder(tree.root);
-    // print_in_pretty_way(tree.root);
-
-    // tree_visualize(tree.root);
-    // html_dump();
-    //verify(tree.root);
-    print_tex(tree.root);
-    //tree_dtor(&(tree.root));
-    tree_visualize(tree.root);
-    printf("%lf",tree_eval(tree.root, 0));
-}
-
-diff_tree_element * node_ctor(double value, types_of_node type) {
+diff_tree_element * node_ctor(double value, types_of_node type, diff_tree_element * left, diff_tree_element * right, diff_tree_element * parent) {
     diff_tree_element * element = (diff_tree_element *) calloc(1, sizeof(diff_tree_element));
     element->type = type;
     element->value = value;
-    element->left = NULL;
-    element->right = NULL;
-    element->parent = NULL;
+    element->left = left;
+    element->right = right;
+    element->parent = parent;
     return element;
 }
 
-void tie_child_node(elem_ptr * link, double value, types_of_node type, elem_ptr parent) {        // it like "tie" to the given link
-    *link = node_ctor(value, type);
-    (*link)->parent = parent;
+void tie_child_node(elem_ptr * link,double value, types_of_node type, diff_tree_element * left, diff_tree_element * right, elem_ptr parent) {        // it like "tie" to the given link
+    *link = node_ctor(value, type, left, right, parent);
     return;
 }
 
 int tree_ctor(diff_tree * tree) {
-    tree->root = node_ctor(0, value_t);  // it is not null, because in reader must be not null ptr to write there
+    tree->root = node_ctor(0,value_t, NULL, NULL, NULL);  // it is not null, because in reader must be not null ptr to write there
     tree->size = 0;
     return 0;
 }
@@ -77,18 +60,21 @@ double get_op_number(char * name) {
 
 int read_node_data(elem_ptr * link, FILE * pfile, elem_ptr * parent) {  //more clear
     if (check_symbol('(', pfile) == 1) {
-        tie_child_node(link, 0, value_t, *parent);
+        tie_child_node(link, 0, value_t, NULL, NULL, *parent);
         read_node_data(&((*link)->left), pfile, link);
 
         double value = 0;
         char op[op_name_len] = {};
+        char x = '0';
 
         if (fscanf(pfile, "%lf", &value) == 1) {
-            (*link)->type = 1;
+            (*link)->type = value_t;
             (*link)->value = value;
+        } else if(check_symbol('x', pfile) == 1) {
+            (*link)->type = variable_t;
+            (*link)->value = 1;
         } else if (fscanf(pfile, "%[^(]s", &op) == 1) {
- 
-                (*link)->type = 2;// enum
+                (*link)->type = operator_t;// enum
                 (*link)->value = get_op_number(op); 
             //}    
         }
