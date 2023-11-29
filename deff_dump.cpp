@@ -16,7 +16,7 @@ void print_tree_inorder(diff_tree_element * root) {
     if (root->type == value_t) {
         printf("%.2lf", root->value);
     } else if ((int)root->type == operator_t) {
-        printf("%c", get_op_symbol(root->value));
+        //printf("%c", get_op_symbol(root->value));
     }
     
     print_tree_inorder(root->right);

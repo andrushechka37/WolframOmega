@@ -1,6 +1,6 @@
 #include <stdlib.h>
 #include <stdio.h>
-#include "deff.h"
+#include "tree.h"
 #include "deff_dump.h"
 #include <string.h>  // delete
 #include <math.h>

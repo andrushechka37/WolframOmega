@@ -14,10 +14,10 @@ CXXFLAGS =  -D _DEBUG -ggdb3 -std=c++17 -O0 -Wall -Wextra -Weffc++ -Waggressive-
 
 
 .PHONY: tree
-akinator: deff.o deff_dump.o
-	clang++ deff.o deff_dump.o $(CXXFLAGS) -o deff && ./deff
+akinator: tree.o deff_dump.o
+	clang++ tree.o deff_dump.o $(CXXFLAGS) -o deff && ./deff
 deff_dump.o: deff_dump.cpp deff_dump.h
 	clang++ -c deff_dump.cpp
 
-deff.o: deff.cpp deff.h
-	clang++ -c deff.cpp
+tree.o: tree.cpp tree.h
+	clang++ -c tree.cpp
