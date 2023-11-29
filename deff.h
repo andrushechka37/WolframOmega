@@ -1,15 +1,15 @@
 #pragma once
 
-struct deff_tree_element {
+struct diff_tree_element {
     double value;
     int type;
-    deff_tree_element * left;
-    deff_tree_element * right;
-    deff_tree_element * parent;
+    diff_tree_element * left;
+    diff_tree_element * right;
+    diff_tree_element * parent;
 };
 
-struct deff_tree {
-    deff_tree_element * root;
+struct diff_tree {
+    diff_tree_element * root;
     int size;
 };
 
@@ -61,7 +61,7 @@ const int op_priority_mask = 240;
 
 const char nil = '_';
 
-typedef deff_tree_element* elem_ptr;
+typedef diff_tree_element* elem_ptr;
 
 #define is_bracket                                                     \
     (root->type == operator_t) &&                                         \
@@ -70,19 +70,20 @@ typedef deff_tree_element* elem_ptr;
 
 
 void tie_child_node(elem_ptr * link, double value, types_of_node type, elem_ptr parent);
-deff_tree_element * node_ctor(double value, types_of_node type);
+diff_tree_element * node_ctor(double value, types_of_node type);
 
-int tree_ctor(deff_tree * tree);
+int tree_ctor(diff_tree * tree);
 void tree_dtor(elem_ptr * root);
 
 const char * get_op_symbol(double op_num);          // maybe static
 double get_op_number(char op_symbol);
 
 int read_node_data(elem_ptr * link, FILE * pfile, elem_ptr * parent);
-int read_data(deff_tree * tree, char * filename = "data.txt");
+int read_data(diff_tree * tree, char * filename = "data.txt");
 
-int tree_verify(deff_tree_element * element);
-void print_in_pretty_way(deff_tree_element * root);
-void print_tex_single_equation(deff_tree_element * root, FILE * pfile);
+int tree_verify(diff_tree_element * element);
+void print_in_pretty_way(diff_tree_element * root);
+void print_tex_single_equation(diff_tree_element * root, FILE * pfile);
 
-int print_tex(deff_tree_element * root, char * file_name = "tex.md");
+int print_tex(diff_tree_element * root, char * file_name = "tex.md");
+double tree_eval(diff_tree_element * element, double x_value);

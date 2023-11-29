@@ -3,8 +3,8 @@
 
 #define hard_visualize 0
 
-void print_tree_inorder(deff_tree_element * root);
-void tree_visualize(deff_tree_element * element);
+void print_tree_inorder(diff_tree_element * root);
+void tree_visualize(diff_tree_element * element);
 void create_new_graph(void);
 void html_dump(void);
 

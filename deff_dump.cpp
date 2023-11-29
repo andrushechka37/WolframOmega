@@ -2,11 +2,11 @@
 #include <stdio.h>
 #include "deff_dump.h"
 #include <string.h>
-static void print_graph_arrows(deff_tree_element * element, FILE * pfile);
-static void print_graph_node(deff_tree_element * element, FILE * pfile, int rank);
+static void print_graph_arrows(diff_tree_element * element, FILE * pfile);
+static void print_graph_node(diff_tree_element * element, FILE * pfile, int rank);
 
 
-void print_tree_inorder(deff_tree_element * root) {
+void print_tree_inorder(diff_tree_element * root) {
     if (root == NULL) {     
         printf("_");
         return;
@@ -26,7 +26,7 @@ void print_tree_inorder(deff_tree_element * root) {
 
 
 
-static void print_graph_arrows(deff_tree_element * element, FILE * pfile) {
+static void print_graph_arrows(diff_tree_element * element, FILE * pfile) {
     if (element->left != NULL) {
         fprintf(pfile, "\t%d->%d [color = \"#0ae7ff\"];\n", element, element->left);
         print_graph_arrows(element->left, pfile);
@@ -39,7 +39,7 @@ static void print_graph_arrows(deff_tree_element * element, FILE * pfile) {
     return;
 }
 
-static void print_graph_node(deff_tree_element * element, FILE * pfile, int rank) {
+static void print_graph_node(diff_tree_element * element, FILE * pfile, int rank) {
     if (hard_visualize == 1) {                              // i know copypast, but i thuink it is not critical,
         fprintf(pfile, "\t%d[shape=Mrecord,style=filled, fillcolor=\"#7293ba\", rank = %d,"  // it is for better understanding
                    "label=\"{parent: %p | name: %p | {value: %.2lf | type: %d} | {left: %p | right: %p}}\"];\n", 
@@ -68,7 +68,7 @@ static void print_graph_node(deff_tree_element * element, FILE * pfile, int rank
     return;
 }
 
-void tree_visualize(deff_tree_element * element) {
+void tree_visualize(diff_tree_element * element) {
     FILE * pfile = fopen("graph.dot", "w");
     fprintf(pfile, "digraph structs {\n");
     fprintf(pfile, "\trankdir=HR;\n");

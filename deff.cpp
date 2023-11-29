@@ -3,10 +3,12 @@
 #include "deff.h"
 #include "deff_dump.h"
 #include <string.h>  // delete
-// struct
+#include <math.h>
 // tree calc
+
 // verificator upgrade    
 // add check for single ops
+
 // deff itself
 // dsl
 int error_status = 0;
@@ -23,23 +25,24 @@ op_names_numbers_t op_names_numbers[op_count] = {
 static bool check_symbol(char symbol, FILE * pfile);
 
 int main(void) {
-    deff_tree tree = {};
+    diff_tree tree = {};
     tree_ctor(&tree);
     read_data(&tree);
 
     //print_tree_inorder(tree.root);
-    print_in_pretty_way(tree.root);
+    // print_in_pretty_way(tree.root);
 
-    tree_visualize(tree.root);
-    html_dump();
+    // tree_visualize(tree.root);
+    // html_dump();
     //verify(tree.root);
     print_tex(tree.root);
-    tree_dtor(&(tree.root));
+    //tree_dtor(&(tree.root));
     tree_visualize(tree.root);
+    printf("%lf",tree_eval(tree.root, 0));
 }
 
-deff_tree_element * node_ctor(double value, types_of_node type) {
-    deff_tree_element * element = (deff_tree_element *) calloc(1, sizeof(deff_tree_element));
+diff_tree_element * node_ctor(double value, types_of_node type) {
+    diff_tree_element * element = (diff_tree_element *) calloc(1, sizeof(diff_tree_element));
     element->type = type;
     element->value = value;
     element->left = NULL;
@@ -54,7 +57,7 @@ void tie_child_node(elem_ptr * link, double value, types_of_node type, elem_ptr 
     return;
 }
 
-int tree_ctor(deff_tree * tree) {
+int tree_ctor(diff_tree * tree) {
     tree->root = node_ctor(0, value_t);  // it is not null, because in reader must be not null ptr to write there
     tree->size = 0;
     return 0;
@@ -118,7 +121,7 @@ static bool check_symbol(char symbol, FILE * pfile) {
 }
 
 
-int read_data(deff_tree * tree, char * filename) {
+int read_data(diff_tree * tree, char * filename) {
     FILE * pfile = fopen(filename, "r");
     null_ptr_file;
     read_node_data(&(tree->root), pfile, &(tree->root));
@@ -127,7 +130,7 @@ int read_data(deff_tree * tree, char * filename) {
 }
 
 
-int tree_verify(deff_tree_element * element) {
+int tree_verify(diff_tree_element * element) {
     if (element == NULL) {
         return 1;
     }
@@ -157,7 +160,7 @@ bool op_priority(double op1, double op2) {
     return 0;
 }
 
-void print_in_pretty_way(deff_tree_element * root) {
+void print_in_pretty_way(diff_tree_element * root) {
     if (root == NULL) {     
         return;
     }
@@ -180,7 +183,7 @@ void print_in_pretty_way(deff_tree_element * root) {
     return;
 }
 
-void print_tex_single_equation(deff_tree_element * root, FILE * pfile) {
+void print_tex_single_equation(diff_tree_element * root, FILE * pfile) {
     if (root == NULL) {     
         return;
     }
@@ -193,13 +196,15 @@ void print_tex_single_equation(deff_tree_element * root, FILE * pfile) {
     }
 
     print_tex_single_equation(root->left, pfile);
+    int bracket = 0;
 
     if(root->type == value_t) {
          fprintf(pfile,"%.2lf", root->value);
     } else if (root->type == operator_t) {
-        if (((int)root->value != OP_POW) && ((int)root->value != OP_DIV)) {
+        if (((int)root->value < OP_DIV)) {
             fprintf(pfile,"%s", get_op_symbol(root->value));
         } else {
+            bracket = 1;
             switch ((int)root->value) {
                 case OP_POW:
                     fprintf(pfile,"^{");
@@ -207,6 +212,8 @@ void print_tex_single_equation(deff_tree_element * root, FILE * pfile) {
                 case OP_DIV:
                     fprintf(pfile,"}{");
                     break;
+                default:
+                    fprintf(pfile,"%s{", get_op_symbol(root->value));
             }
         }
     } else if ((int)root->type == variable_t) {
@@ -219,12 +226,13 @@ void print_tex_single_equation(deff_tree_element * root, FILE * pfile) {
         fprintf(pfile,")");
     }
 
-    if (root->value == OP_DIV || root->value == OP_POW) {
+    if (bracket == 1) {
        fprintf(pfile,"}");
     }
     return;
 }
-int print_tex(deff_tree_element * root, char * file_name) {
+
+int print_tex(diff_tree_element * root, char * file_name) {
     FILE * pfile = fopen(file_name, "w");
     null_ptr_file;
     fprintf(pfile, "$$");
@@ -248,7 +256,46 @@ void tree_dtor(elem_ptr * root) {
     return;
 }
 
-
+double tree_eval(diff_tree_element * element, double x_value) {
+    if (element->type == value_t) {
+        return element->value;
+    }
+    if (element->type == variable_t) {
+        return x_value;
+    }
+    double right_value = 0;
+    double  left_value = 0;
+    if (OP_SQRT >= (int)element->value || (int)element->value >= OP_COS) {
+        left_value = tree_eval(element->left, x_value);
+    }
+    right_value = tree_eval(element->right, x_value);
+    switch ((int)element->value) {
+        case OP_ADD:
+            return left_value + right_value;
+        case OP_SUB:
+            return left_value - right_value;
+        case OP_MUL:
+            return left_value * right_value;
+        case OP_DIV:
+            if (right_value != 0) {
+                return left_value / right_value;
+            } else {
+                printf("divide on zero, error\n");
+                return 0;
+            }
+        case OP_SIN:
+            return sin(right_value);
+        case OP_COS:
+            return cos(right_value);
+        case OP_POW:
+            return pow(left_value, right_value);
+        case OP_SQRT:
+            return sqrt(right_value);
+        default:
+            printf("there is no that operation, error %lf\n", element->value);
+            return 0;
+    }
+}
 
 
 
