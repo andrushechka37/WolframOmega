@@ -10,7 +10,7 @@
 
 // deff itself
 // dsl
-int error_status = 0;
+
 static bool check_symbol(char symbol, FILE * pfile);
 
 op_names_numbers_t op_names_numbers[op_count] = {
@@ -126,11 +126,24 @@ int tree_verify(diff_tree_element * element) {
             printf("%p number does not have all nulls", element);
             error_status = 1;
         }
-    } else if ((int)element->type == operator_t) {
-        if (element->left == NULL || element->right == NULL) {
-            printf("%p op does not have all numbers", element);
-            error_status = 1;
+    } else if (element->type == operator_t) {
+        if (OP_SQRT <= (int)element->value && (int)element->value <= OP_COS) {
+            if (element->left != NULL || element->right == NULL) {
+                printf("%p op does not have all numbers", element);
+                error_status = 1;
+            }
+        } else {
+            if (element->left == NULL || element->right == NULL) {
+                printf("%p op does not have all numbers", element);
+                error_status = 1;
+            }
         }
+    }
+    if (element->left != NULL && element->right != NULL) {
+        if(element->left->parent != element || element->right->parent != element) {
+        printf("%p - left parent %p - right parent %p - elemen", element->left->parent, element->right->parent, element);
+        error_status = 1;
+    }
     }
     tree_verify(element->right);
     if (error_status == 1) {

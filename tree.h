@@ -90,3 +90,5 @@ void print_tex_single_equation(diff_tree_element * root, FILE * pfile);
 
 int print_tex(diff_tree_element * root, char * file_name = "tex.md");
 double tree_eval(diff_tree_element * element, double x_value);
+
+inline int error_status = 0;
