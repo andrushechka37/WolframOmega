@@ -33,15 +33,15 @@ enum operations {
 };
 
 enum types_of_node {
-    value_t = 1,
+    value_t    = 1,
     operator_t = 2,
     variable_t = 3
 };
 
 
-#define inscect_symbol(symbol)                   \
+#define REQUIRE_SYMBOL(symbol)                   \
     if (check_symbol(symbol, pfile) == 0) {      \
-        return 0;                                \
+        return 1;                                \
     }                                            \
 
 #define verify(element)                  \
@@ -56,6 +56,13 @@ enum types_of_node {
         printf("open error");  \
         return 0;              \
     }
+
+#define READ_DATA(element)                                      \
+    if (read_data(element) == 1) {                              \
+        printf("\x1b[31m" "segmentationnnn faulttttt\n");       \
+        return 0;                                               \
+    }   
+
 const int op_priority_mask = 240;
 
 
@@ -63,15 +70,13 @@ const char nil = '_';
 
 typedef diff_tree_element* elem_ptr;
 
-#define is_bracket                                                     \
-    (root->type == operator_t) &&                                         \
-    (root->parent->type == operator_t) && \
-    (op_priority(root->value, root->parent->value) == 1)                 \
+#define IS_ROUND_BRACKET                                       \
+    (root->type == operator_t) &&                              \
+    (root->parent->type == operator_t) &&                      \
+    (op_priority(root->value, root->parent->value) == 1)       \
 
 
-void tie_child_node(elem_ptr * link,double value, types_of_node type, 
-                    diff_tree_element * left, diff_tree_element * right, elem_ptr parent);
-                    
+
 diff_tree_element * node_ctor(double value, types_of_node type, diff_tree_element * left, 
                           diff_tree_element * right, diff_tree_element * parent);
 

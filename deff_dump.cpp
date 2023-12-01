@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include "deff_dump.h"
 #include <string.h>
+
 static void print_graph_arrows(diff_tree_element * element, FILE * pfile);
 static void print_graph_node(diff_tree_element * element, FILE * pfile, int rank);
 
@@ -48,7 +49,7 @@ static void print_graph_node(diff_tree_element * element, FILE * pfile, int rank
     } else {                                         // ifndef
         if (element->type == value_t) {
             fprintf(pfile, "\t%d[shape=Mrecord,style=filled, fillcolor=\"#7293ba\", rank = %d," 
-                   "label=\"%.2lf\"];\n", element, rank, element->value);  // obertka
+                   "label=\"%.2lf\"];\n", element, rank, element->value);  //obertka // for me it easier without it
         } else if (element->type == operator_t) {
             fprintf(pfile, "\t%d[shape=circle,style=filled, fillcolor=\"#b481f7\", rank = %d," 
                    "label=\"%s\"];\n", element, rank, get_op_symbol(element->value));
@@ -106,8 +107,7 @@ void create_new_graph(void) {  // not tmp files, but better than previous hardco
 }
 
 void html_dump(void) {
-    FILE * pfile = fopen("log.html", "w"); // 
-
+    FILE * pfile = fopen("log.html", "w"); 
     fprintf(pfile, "<hr/>\n");
     fprintf(pfile, "<head>\n");
     fprintf(pfile, "\t<title>megalogg</title>\n");
@@ -121,5 +121,4 @@ void html_dump(void) {
     }
     fprintf(pfile, "</body>\n");
     fclose(pfile);
-    
 }

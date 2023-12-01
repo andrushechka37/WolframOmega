@@ -3,15 +3,10 @@
 #include "tree.h"
 #include <string.h>
 #include <math.h>
-// tree calc
 
-// verificator upgrade    
-// add check for single ops
-
-// deff itself
-// dsl
 
 static bool check_symbol(char symbol, FILE * pfile);
+static void set_type_and_value(double value, types_of_node type, diff_tree_element * element);
 
 op_names_numbers_t op_names_numbers[op_count] = {
         {OP_ADD, "+"},
@@ -24,7 +19,6 @@ op_names_numbers_t op_names_numbers[op_count] = {
         {OP_POW, "^"}
 };
 
-
 diff_tree_element * node_ctor(double value, types_of_node type, diff_tree_element * left, diff_tree_element * right, diff_tree_element * parent) {
     diff_tree_element * element = (diff_tree_element *) calloc(1, sizeof(diff_tree_element));
     element->type = type;
@@ -35,58 +29,59 @@ diff_tree_element * node_ctor(double value, types_of_node type, diff_tree_elemen
     return element;
 }
 
-void tie_child_node(elem_ptr * link,double value, types_of_node type, diff_tree_element * left, diff_tree_element * right, elem_ptr parent) {        // it like "tie" to the given link
-    *link = node_ctor(value, type, left, right, parent);
-    return;
-}
-
 int tree_ctor(diff_tree * tree) {
-    tree->root = node_ctor(0,value_t, NULL, NULL, NULL);  // it is not null, because in reader must be not null ptr to write there
-    tree->size = 0;
+    tree->root = node_ctor(0,value_t, NULL, NULL, NULL);  // it is not null, because
+    tree->size = 0;                                                    // in reader must be not null ptr to write there
     return 0;
 }
 
-const char * get_op_symbol(double op_num) {
+const char * get_op_symbol(double op_num) { 
     int i = 0;
     while (op_num != op_names_numbers[i].number) i++;
     return op_names_numbers[i].name;
 }
-double get_op_number(char * name) {
+
+double get_op_number(char * name) { // do it faster with hashes instead of strcmp
     int i = 0;
-    while (strcmp(op_names_numbers[i].name, name)) i++;
+    while (strcmp(op_names_numbers[i].name, name)) {
+        i++;
+        if (i > 8) {
+            return -1;
+        }
+    }
     return op_names_numbers[i].number;
 }
 
+#define LEFT &((*link)->left)
+#define RIGHT &((*link)->right)
 
-int read_node_data(elem_ptr * link, FILE * pfile, elem_ptr * parent) {  //more clear
-    if (check_symbol('(', pfile) == 1) {
-        tie_child_node(link, 0, value_t, NULL, NULL, *parent);
-        read_node_data(&((*link)->left), pfile, link);
+int read_node_data(elem_ptr * link, FILE * pfile, elem_ptr * parent) {  //more clear      // skip probels
+    if (check_symbol('(', pfile) == 1) { // if it is new node or not
+        *link = node_ctor(0, value_t, NULL, NULL, *parent);
+        read_node_data(LEFT, pfile, link);
 
-        double value = 0;
+        double value = 0;                  // error obrabotka
         char op[op_name_len] = {};
         char x = '0';
 
         if (fscanf(pfile, "%lf", &value) == 1) {
-            (*link)->type = value_t;
-            (*link)->value = value;
+            set_type_and_value(value, value_t, *link);
         } else if(check_symbol('x', pfile) == 1) {
-            (*link)->type = variable_t;
-            (*link)->value = 1;
+            set_type_and_value(1, variable_t, *link);
         } else if (fscanf(pfile, "%[^(]s", &op) == 1) {
-                (*link)->type = operator_t;// enum
-                (*link)->value = get_op_number(op); 
-            //}    
+            set_type_and_value(get_op_number(op), operator_t, *link);
         }
 
-        read_node_data(&((*link)->right), pfile, link);
-        inscect_symbol(')');  // require
+        read_node_data(RIGHT, pfile, link);
+        REQUIRE_SYMBOL(')');  // require
 
     } else if (check_symbol(nil, pfile) == 1) {
         return 0;
     }
 }
 
+#undef LEFT
+#undef RIGHT
 
 static bool check_symbol(char symbol, FILE * pfile) {
     bool is_found = 1;
@@ -106,15 +101,16 @@ static bool check_symbol(char symbol, FILE * pfile) {
     return 0;
 }
 
-
 int read_data(diff_tree * tree, char * filename) {
     FILE * pfile = fopen(filename, "r");
     null_ptr_file;
-    read_node_data(&(tree->root), pfile, &(tree->root));
+    if (read_node_data(&(tree->root), pfile, &(tree->root)) == 1) {
+        fclose(pfile);
+        return 1;
+    }
     fclose(pfile);
     return 0;
 }
-
 
 int tree_verify(diff_tree_element * element) {
     if (element == NULL) {
@@ -186,24 +182,23 @@ void print_tex_single_equation(diff_tree_element * root, FILE * pfile) {
     if (root == NULL) {     
         return;
     }
-
     if (root->value == OP_DIV) {
         fprintf(pfile, "\\frac{");
     }
-    if (is_bracket) {
+    if (IS_ROUND_BRACKET) {
         fprintf(pfile,"(");
     }
 
     print_tex_single_equation(root->left, pfile);
-    int bracket = 0;
 
+    bool is_figure_bracket = 0;
     if(root->type == value_t) {
-         fprintf(pfile,"%.2lf", root->value);
+        fprintf(pfile,"%.2lf", root->value);
     } else if (root->type == operator_t) {
         if (((int)root->value < OP_DIV)) {
             fprintf(pfile,"%s", get_op_symbol(root->value));
         } else {
-            bracket = 1;
+            is_figure_bracket = 1;
             switch ((int)root->value) {
                 case OP_POW:
                     fprintf(pfile,"^{");
@@ -221,11 +216,11 @@ void print_tex_single_equation(diff_tree_element * root, FILE * pfile) {
 
     print_tex_single_equation(root->right, pfile);
 
-    if (is_bracket) {
+    if (IS_ROUND_BRACKET) {
         fprintf(pfile,")");
     }
 
-    if (bracket == 1) {
+    if (is_figure_bracket == 1) {  // maybe caps for style
        fprintf(pfile,"}");
     }
     return;
@@ -238,17 +233,21 @@ int print_tex(diff_tree_element * root, char * file_name) {
     print_tex_single_equation(root, pfile);
     fprintf(pfile, "$$");
     fclose(pfile);
+    return 0;
 }
 
 void tree_dtor(elem_ptr * root) {
     if (*root == NULL) {     
         return;
     }
+
     tree_dtor(&(*root)->left);
+
     (*root)->parent = NULL;
-    (*root)->type = 0;
-    (*root)->value= 0;
+    set_type_and_value(0, (types_of_node)0, *root);
+
     tree_dtor(&(*root)->right);
+
     (*root)->right = NULL;
     (*root)->left = NULL;
     free(*root);
@@ -262,12 +261,15 @@ double tree_eval(diff_tree_element * element, double x_value) {
     if (element->type == variable_t) {
         return x_value;
     }
+
     double right_value = 0;
     double  left_value = 0;
+
     if (OP_SQRT >= (int)element->value || (int)element->value >= OP_COS) {
         left_value = tree_eval(element->left, x_value);
     }
     right_value = tree_eval(element->right, x_value);
+
     switch ((int)element->value) {
         case OP_ADD:
             return left_value + right_value;
@@ -296,6 +298,10 @@ double tree_eval(diff_tree_element * element, double x_value) {
     }
 }
 
-
+static void set_type_and_value(double value, types_of_node type, diff_tree_element * element) {
+    element->value = value;
+    element->type = (int) type;
+    return;
+}
 
 

@@ -6,24 +6,23 @@
 #include <math.h>
 #include "diff.h"
 
-static void set_parents(diff_tree_element * root, diff_tree_element * parent);
 
+// caps define
+static void set_parents(diff_tree_element * root, diff_tree_element * parent);
 int main(void) {
     diff_tree tree = {};
     tree_ctor(&tree);
     read_data(&tree);
 
-    //tree_visualize(tree.root);
-    //printf("%lf",tree_eval(tree.root, 0));
+    tree_visualize(tree.root);
     
     diff_tree_element * tree2 = diff(tree.root);
-    tree_visualize(tree.root);
+    tree_dtor(&(tree.root));
+    //tree_visualize(tree.root);
     set_parents(tree2, tree2);
-    //verify(tree2);
+    verify(tree2);
     tree_visualize(tree2);
     print_tex(tree2);
-
-    tree_dtor(&(tree.root));
 } 
 
 diff_tree_element * diff(diff_tree_element * element) {
@@ -57,7 +56,7 @@ diff_tree_element * diff(diff_tree_element * element) {
     case OP_COS:
         return _MUL(_MUL(int_node_ctor(-1), _SIN), _DIF_R);
     case OP_POW:
-        return _MUL(_MUL(element->right, _POW(element->left, int_node_ctor(element->right->value - 1))), _DIF_L);
+        return _MUL(_MUL(_COPY_R, _POW(_COPY_L, int_node_ctor(element->right->value - 1))), _DIF_L);
     
     default:
         printf("govno pizdec\n");
@@ -74,6 +73,19 @@ static void set_parents(diff_tree_element * element, diff_tree_element * parent)
     set_parents(element->right, element);
     return;
 }
+
+diff_tree_element * copy_node(diff_tree_element * original) {
+    if (original == NULL) {     
+        return NULL;
+    }
+    diff_tree_element * left =  copy_node(original->left);
+    diff_tree_element * right = copy_node(original->right);
+    return node_ctor(original->value, (types_of_node)original->type,left, right, NULL); // troubles
+}
+
+
+
+
 
 
 

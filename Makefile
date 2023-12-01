@@ -22,5 +22,5 @@ deff_dump.o: deff_dump.cpp deff_dump.h
 tree.o: tree.cpp tree.h
 	clang++ -c tree.cpp
 
-diff.o: diff.cpp diff.h
+diff.o: diff.cpp diff.h tree.h
 	clang++ -c diff.cpp
