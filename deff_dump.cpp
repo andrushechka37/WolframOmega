@@ -49,10 +49,10 @@ static void print_graph_node(diff_tree_element * element, FILE * pfile, int rank
     } else {                                         // ifndef
         if (element->type == value_t) {
             fprintf(pfile, "\t%d[shape=Mrecord,style=filled, fillcolor=\"#7293ba\", rank = %d," 
-                   "label=\"%.2lf\"];\n", element, rank, element->value);  //obertka // for me it easier without it
+                   "label=\"%.2lf\"];\n", element, rank, element->value.number);  //obertka // for me it easier without it
         } else if (element->type == operator_t) {
             fprintf(pfile, "\t%d[shape=circle,style=filled, fillcolor=\"#b481f7\", rank = %d," 
-                   "label=\"%s\"];\n", element, rank, get_op_symbol(element->value));
+                   "label=\"%s\"];\n", element, rank, get_op_symbol(element->value.operetor.op_number));
         } else if (element->type == variable_t) {
             fprintf(pfile, "\t%d[shape=circle,style=filled, fillcolor=\"#f0ab67\", rank = %d," 
                    "label=\"x\"];\n", element, rank);

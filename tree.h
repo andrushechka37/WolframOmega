@@ -1,24 +1,15 @@
 #pragma once
 
-struct diff_tree_element {
-    double value;
-    int type;
-    diff_tree_element * left;
-    diff_tree_element * right;
-    diff_tree_element * parent;
-};
 
-struct diff_tree {
-    diff_tree_element * root;
-    int size;
-};
 
 const int op_name_len = 10;
 const int op_count = 8;
+const int funcs_count = 8;
 
 struct op_names_numbers_t {
     const double number;
     const char name[op_name_len];
+    const int arg_quantity;
 };
 
 enum operations {
@@ -31,8 +22,30 @@ enum operations {
     OP_COS  = 51,   // 0011|0011     |
     OP_POW  = 52    // 0011|0100     |
 };
+struct op_info {
+    operations op_number;
+    int arg_quantity;
+};
+union node_value {
+    op_info operetor;
+    double number;
+};
+
+struct diff_tree_element {
+    node_value value;
+    int type;
+    diff_tree_element * left;
+    diff_tree_element * right;
+    diff_tree_element * parent;
+};
+
+struct diff_tree {
+    diff_tree_element * root;
+    int size;
+};
 
 enum types_of_node {
+    zero_t     = 0,
     value_t    = 1,
     operator_t = 2,
     variable_t = 3
@@ -51,10 +64,11 @@ enum types_of_node {
         return 0;                        \
     }
 
-#define null_ptr_file          \
-    if (pfile == NULL) {       \
-        printf("open error");  \
-        return 0;              \
+#define IS_NULL_PTR(element)                    \
+    if (element == NULL) {                      \
+        printf("place holder of "               \
+               "reporting null ptr element");   \
+        return 0;                               \
     }
 
 #define READ_DATA(element)                                      \
@@ -71,9 +85,9 @@ const char nil = '_';
 typedef diff_tree_element* elem_ptr;
 
 #define IS_ROUND_BRACKET                                       \
-    (root->type == operator_t) &&                              \
-    (root->parent->type == operator_t) &&                      \
-    (op_priority(root->value, root->parent->value) == 1)       \
+    (element->type == operator_t) &&                              \
+    (element->parent->type == operator_t) &&                      \
+    (op_priority(element->value.operetor.op_number, element->parent->value.operetor.op_number) == 1)       \
 
 
 
@@ -83,7 +97,7 @@ diff_tree_element * node_ctor(double value, types_of_node type, diff_tree_elemen
 int tree_ctor(diff_tree * tree);
 void tree_dtor(elem_ptr * root);
 
-const char * get_op_symbol(double op_num);          // maybe static
+const char * get_op_symbol(int op_num);          // maybe static
 double get_op_number(char op_symbol);
 
 int read_node_data(elem_ptr * link, FILE * pfile, elem_ptr * parent);
@@ -97,3 +111,8 @@ int print_tex(diff_tree_element * root, char * file_name = "tex.md");
 double tree_eval(diff_tree_element * element, double x_value);
 
 inline int error_status = 0;
+
+
+#define ELEM_OP_NUM element->value.operetor.op_number
+#define ELEM_DOUBLE element->value.number
+#define ELEM_OP_ARG element->value.operetor.arg_quantity

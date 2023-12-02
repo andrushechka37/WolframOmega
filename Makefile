@@ -16,7 +16,7 @@ CXXFLAGS =  -D _DEBUG -ggdb3 -std=c++17 -O0 -Wall -Wextra -Weffc++ -Waggressive-
 .PHONY: tree
 akinator: tree.o deff_dump.o diff.o
 	clang++ tree.o deff_dump.o diff.o $(CXXFLAGS) -o deff && ./deff
-deff_dump.o: deff_dump.cpp deff_dump.h
+deff_dump.o: deff_dump.cpp deff_dump.h tree.h
 	clang++ -c deff_dump.cpp
 
 tree.o: tree.cpp tree.h
