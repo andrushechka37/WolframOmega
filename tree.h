@@ -5,6 +5,9 @@
 const int op_name_len = 10;
 const int op_count = 8;
 const int funcs_count = 8;
+const int op_priority_mask = 240;
+const char nil = '_';
+
 
 struct op_names_numbers_t {
     const double number;
@@ -22,10 +25,12 @@ enum operations {
     OP_COS  = 51,   // 0011|0011     |
     OP_POW  = 52    // 0011|0100     |
 };
+
 struct op_info {
     operations op_number;
     int arg_quantity;
 };
+
 union node_value {
     op_info operetor;
     double number;
@@ -51,6 +56,7 @@ enum types_of_node {
     variable_t = 3
 };
 
+typedef diff_tree_element* elem_ptr;
 
 #define REQUIRE_SYMBOL(symbol)                   \
     if (check_symbol(symbol, pfile) == 0) {      \
@@ -60,7 +66,7 @@ enum types_of_node {
 #define verify(element)                  \
     error_status = 0;                    \
     if (tree_verify(element) == 1) {     \
-        tree_visualize(element);       \
+        tree_visualize(element);         \
         return 0;                        \
     }
 
@@ -77,21 +83,17 @@ enum types_of_node {
         return 0;                                               \
     }   
 
-const int op_priority_mask = 240;
 
 
-const char nil = '_';
-
-typedef diff_tree_element* elem_ptr;
-
-#define IS_ROUND_BRACKET                                       \
+#define IS_ROUND_BRACKET                                          \
     (element->type == operator_t) &&                              \
     (element->parent->type == operator_t) &&                      \
-    (op_priority(element->value.operetor.op_number, element->parent->value.operetor.op_number) == 1)       \
+    (op_priority(element->value.operetor.op_number,               \
+    element->parent->value.operetor.op_number) == 1)              \
 
 
 
-diff_tree_element * node_ctor(double value, types_of_node type, diff_tree_element * left, 
+diff_tree_element * node_ctor(double value, types_of_node type, diff_tree_element *  left, 
                           diff_tree_element * right, diff_tree_element * parent);
 
 int tree_ctor(diff_tree * tree);
@@ -104,6 +106,7 @@ int read_node_data(elem_ptr * link, FILE * pfile, elem_ptr * parent);
 int read_data(diff_tree * tree, char * filename = "data.txt");
 
 int tree_verify(diff_tree_element * element);
+
 void print_in_pretty_way(diff_tree_element * root);
 void print_tex_single_equation(diff_tree_element * root, FILE * pfile);
 

@@ -6,7 +6,6 @@
 static void print_graph_arrows(diff_tree_element * element, FILE * pfile);
 static void print_graph_node(diff_tree_element * element, FILE * pfile, int rank);
 
-
 void print_tree_inorder(diff_tree_element * root) {
     if (root == NULL) {     
         printf("_");
@@ -24,8 +23,6 @@ void print_tree_inorder(diff_tree_element * root) {
     printf(")");
     return;
 }
-
-
 
 static void print_graph_arrows(diff_tree_element * element, FILE * pfile) {
     if (element->left != NULL) {

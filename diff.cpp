@@ -6,10 +6,6 @@
 #include <math.h>
 #include "diff.h"
 
-
-// caps define(done)
-// sin/cos (done)
-
 bool is_change = 1;
 // simplify
 // recursivni spuuuusk
@@ -21,19 +17,19 @@ int main(void) {
     tree_ctor(&tree);
     read_data(&tree);
     //tree_visualize(tree.root);
-    diff_tree_element * tree2 = diff(tree.root);
+    diff_tree_element * tree2 = tree_diff(tree.root);
     tree_dtor(&(tree.root));
 
 
     set_parents(tree2, tree2);
     //verify(tree2);
     tree_visualize(tree2);
-    simplifie_tree(tree2);
+    tree_simplifie(tree2);
     tree_visualize(tree2);
     print_tex(tree2);
 } 
 
-diff_tree_element * diff(diff_tree_element * element) {
+diff_tree_element * tree_diff(diff_tree_element * element) {
     if (element->type == value_t) {
         return int_node_ctor(0);
     } else if (element->type == variable_t) {
@@ -42,10 +38,10 @@ diff_tree_element * diff(diff_tree_element * element) {
 
     diff_tree_element * left_node = NULL;
     if (ELEM_OP_ARG == 2) {
-        left_node = diff(element->left);
+        left_node = tree_diff(element->left);
     }
 
-    diff_tree_element * right_node = diff(element->right);
+    diff_tree_element * right_node = tree_diff(element->right);
 
 
 
@@ -137,6 +133,7 @@ void single_node_dtor(elem_ptr * element) {
     (*element) = NULL;
     return;
 }
+
 void throw_away_node(diff_tree_element * element, char junk_side) {
     if (junk_side == 'R') {
         tree_dtor(&(element->right));
@@ -155,14 +152,18 @@ void throw_away_node(diff_tree_element * element, char junk_side) {
         element->right = element->right->right;
         single_node_dtor(&(right));
     } else {
-        printf("dermoo");
+        printf("there is wrong junk side chosen");
     }
     is_change = 1;
     return;
-
 }
-// otzu 
-void delete_fictive_nodes(diff_tree_element * element) {// optimise simplify eval
+
+#define left_type element->left->type
+#define right_type element->right->type
+#define left_number element->left->value.number
+#define right_number element->right->value.number
+
+void delete_fictive_nodes(diff_tree_element * element) {
     if (element == NULL) {     
         return;
     }
@@ -170,23 +171,23 @@ void delete_fictive_nodes(diff_tree_element * element) {// optimise simplify eva
     delete_fictive_nodes(element->right);
     if (element->type == operator_t) {
         if (ELEM_OP_NUM == OP_MUL || ELEM_OP_NUM == OP_DIV) {
-            if ((element->left->value.number == 0  && element->left->type == value_t) || 
-                (element->right->value.number == 0 && element->right->type == value_t)) {
+            if ((left_number == 0  && left_type == value_t) || 
+                (right_number == 0 && right_type == value_t)) {
                 tree_dtor(&(element->left));
                 tree_dtor(&(element->right));
                 element->type = value_t;
                 element->value.number = 0;
                 is_change = 1;
                 return;
-            } else if (element->left->value.number == 1 && element->left->type == value_t) { // switch
+            } else if (left_number == 1 && left_type == value_t) { // switch
                 throw_away_node(element, 'L');
-            } else if (element->right->value.number == 1 && element->right->type == value_t) {
+            } else if (right_number == 1 && right_type == value_t) {
                 throw_away_node(element, 'R');
             }
         } else if (ELEM_OP_NUM == OP_ADD || ELEM_OP_NUM == OP_SUB) {
-            if (element->left->value.number == 0 && element->left->type == value_t) {
+            if (left_number == 0 && left_type == value_t) {
                 throw_away_node(element, 'L');
-            } else if (element->right->value.number == 0 && element->right->type == value_t) {
+            } else if (right_number == 0 && right_type == value_t) {
                 throw_away_node(element, 'R');
             }
         }
@@ -194,7 +195,12 @@ void delete_fictive_nodes(diff_tree_element * element) {// optimise simplify eva
     return;
 }
 
-void simplifie_tree(diff_tree_element * element) {
+#undef left_type
+#undef right_type
+#undef left_number
+#undef right_number
+
+void tree_simplifie(diff_tree_element * element) {
     while (is_change == 1) {
     is_change = 0;
     consts_eval(element);

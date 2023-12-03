@@ -22,6 +22,7 @@ op_names_numbers_t op_names_numbers[op_count] = {
 
 diff_tree_element * node_ctor(double value, types_of_node type, diff_tree_element * left,
                               diff_tree_element * right, diff_tree_element * parent) {
+
     diff_tree_element * element = (diff_tree_element *) calloc(1, sizeof(diff_tree_element));
     element->type = type;
     switch (type)
@@ -135,7 +136,7 @@ int tree_verify(diff_tree_element * element) {
         }
         break;
     case operator_t:
-        if (element->value.operetor.arg_quantity == 1) { // if operator has one argument
+        if (ELEM_OP_ARG == 1) { // if operator has one argument
             if (element->left != NULL || element->right == NULL) {
                 printf("%p op does not have all numbers 1", element);
                 error_status = 1;
