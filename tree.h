@@ -60,7 +60,7 @@ enum types_of_node {
 #define verify(element)                  \
     error_status = 0;                    \
     if (tree_verify(element) == 1) {     \
-        tree_visualize(element);         \
+        tree_visualize(element);       \
         return 0;                        \
     }
 

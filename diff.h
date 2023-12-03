@@ -23,3 +23,4 @@ diff_tree_element * copy_node(diff_tree_element * original);
 
 void consts_eval(diff_tree_element * element);
 void delete_fictive_nodes(diff_tree_element * element);
+void simplifie_tree(diff_tree_element * element);

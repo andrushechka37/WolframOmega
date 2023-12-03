@@ -17,7 +17,7 @@ op_names_numbers_t op_names_numbers[op_count] = {
         {OP_SQRT, "\\sqrt", 1},
         {OP_SIN, "\\sin",   1},
         {OP_COS, "\\cos",   1},
-        {OP_POW, "^",       1}
+        {OP_POW, "^",       2}
 };
 
 diff_tree_element * node_ctor(double value, types_of_node type, diff_tree_element * left,
@@ -137,7 +137,7 @@ int tree_verify(diff_tree_element * element) {
     case operator_t:
         if (element->value.operetor.arg_quantity == 1) { // if operator has one argument
             if (element->left != NULL || element->right == NULL) {
-                printf("%p op does not have all numbers", element);
+                printf("%p op does not have all numbers 1", element);
                 error_status = 1;
             }
         } else {
@@ -248,8 +248,8 @@ void tree_dtor(elem_ptr * root) {
 
     (*root)->right = NULL;
     (*root)->left = NULL;
-    (*root) = NULL;
     free(*root);
+    (*root) = NULL;
     return;
 }
 

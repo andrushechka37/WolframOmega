@@ -10,10 +10,9 @@
 // caps define(done)
 // sin/cos (done)
 
-
+bool is_change = 1;
 // simplify
 // recursivni spuuuusk
-// norn quanituty of args !!!!!!!!!!!!!!!!!
 // error detection
 static void set_parents(diff_tree_element * root, diff_tree_element * parent);
 
@@ -21,16 +20,16 @@ int main(void) {
     diff_tree tree = {};
     tree_ctor(&tree);
     read_data(&tree);
-    tree_visualize(tree.root);
+    //tree_visualize(tree.root);
     diff_tree_element * tree2 = diff(tree.root);
     tree_dtor(&(tree.root));
 
 
     set_parents(tree2, tree2);
     //verify(tree2);
-    //tree_visualize(tree2);
-    // consts_eval(tree2);
-    // delete_fictive_nodes(tree2);
+    tree_visualize(tree2);
+    simplifie_tree(tree2);
+    tree_visualize(tree2);
     print_tex(tree2);
 } 
 
@@ -102,7 +101,7 @@ void consts_eval(diff_tree_element * element) {
     }
     consts_eval(element->left);
     consts_eval(element->right);
-    if (element->type == operator_t) {
+    if (element->type == operator_t && ELEM_OP_ARG == 2) {
         if (element->left->type == value_t && element->right->type == value_t) {
             
             double calc = tree_eval(element, 0);
@@ -114,70 +113,92 @@ void consts_eval(diff_tree_element * element) {
             }
             element->type = value_t;
             element->value.number = calc;
+            is_change = 1;
         }
     }
     return; 
 }
-// // otzu 
-// void delete_fictive_nodes(diff_tree_element * element) {// optimise simplify eval
-//     if (element == NULL) {     
-//         return;
-//     }
-//     delete_fictive_nodes(element->left);
-//     delete_fictive_nodes(element->right);
-//     if (element->type == operator_t) {
-//         if ((int)element->value == OP_MUL || (int)element->value == OP_MUL) {
-//             if (element->left->value == 0 || element->left->value == 0) {
-//                 tree_dtor(&(element->left));
-//                 tree_dtor(&(element->right));
-//                 element->type = value_t;
-//                 element->value = 0;
-//                 return;
-//             }
-//             if (element->left->value == 1) {
-//                 if (element == element->parent->left) {
-//                     element->parent->left = COPY_R;
-//                 } else {
-//                     element->parent->right = COPY_R;
-//                 }
-//                 element->right->parent = element->parent;
-//                 element->left = NULL;
-//                 element->right = NULL;
-//                 tree_dtor(&element);
-//             }
-//             if (element->right->value == 1) {
-//                 if (element == element->parent->left) {
-//                     element->parent->left = element->left;
-//                 } else {
-//                     element->parent->right = element->left;
-//                 }
-//                 element->left->parent = element->parent;
-//                 element->left = NULL;
-//                 element->right = NULL;
-//                 tree_dtor(&element);
-//             }
-//         } else if ((int)element->value == OP_ADD || (int)element->value == OP_SUB) {
-//             if (element->left->value == 0) {
-//                 if (element->parent->left == element) {
-//                     element->parent->left = COPY_R;
-//                 } else {
-//                     element->parent->right = COPY_R;
-//                 }
-//                 tree_dtor(&element);
-//             }
-//             if (element->right->value == 0) {
-//                 if (element->parent->left == element) {
-//                     element->parent->left = COPY_L;
-//                 } else {
-//                     element->parent->right = COPY_L;
-//                 }
-//                 tree_dtor(&element);
-//             }
-//         }
-//     }
-//     return;
-// }
 
+void single_node_dtor(elem_ptr * element) {
+    if (*element == NULL) {
+        return;
+    }
+    if ((*element)->left != NULL) {
+        (*element)->left = NULL;
+    }
+    if ((*element)->right != NULL) {
+        (*element)->right = NULL;
+    }
+    (*element)->type = 0;
+    (*element)->value.operetor.arg_quantity = 0;
+    (*element)->value.operetor.op_number = (operations)0;
+    (*element)->value.number = 0;
+    free((*element));
+    (*element) = NULL;
+    return;
+}
+void throw_away_node(diff_tree_element * element, char junk_side) {
+    if (junk_side == 'R') {
+        tree_dtor(&(element->right));
+        element->type = element->left->type;
+        element->value = element->left->value;
+        element->right = element->left->right;
+        diff_tree_element * left = element->left;
+        element->left = element->left->left;
+        single_node_dtor(&(left));
+    } else if (junk_side == 'L') {
+        tree_dtor(&(element->left));
+        element->type = element->right->type;
+        element->value = element->right->value;
+        element->left = element->right->left;
+        diff_tree_element * right = element->right;
+        element->right = element->right->right;
+        single_node_dtor(&(right));
+    } else {
+        printf("dermoo");
+    }
+    is_change = 1;
+    return;
 
+}
+// otzu 
+void delete_fictive_nodes(diff_tree_element * element) {// optimise simplify eval
+    if (element == NULL) {     
+        return;
+    }
+    delete_fictive_nodes(element->left);
+    delete_fictive_nodes(element->right);
+    if (element->type == operator_t) {
+        if (ELEM_OP_NUM == OP_MUL || ELEM_OP_NUM == OP_DIV) {
+            if ((element->left->value.number == 0  && element->left->type == value_t) || 
+                (element->right->value.number == 0 && element->right->type == value_t)) {
+                tree_dtor(&(element->left));
+                tree_dtor(&(element->right));
+                element->type = value_t;
+                element->value.number = 0;
+                is_change = 1;
+                return;
+            } else if (element->left->value.number == 1 && element->left->type == value_t) { // switch
+                throw_away_node(element, 'L');
+            } else if (element->right->value.number == 1 && element->right->type == value_t) {
+                throw_away_node(element, 'R');
+            }
+        } else if (ELEM_OP_NUM == OP_ADD || ELEM_OP_NUM == OP_SUB) {
+            if (element->left->value.number == 0 && element->left->type == value_t) {
+                throw_away_node(element, 'L');
+            } else if (element->right->value.number == 0 && element->right->type == value_t) {
+                throw_away_node(element, 'R');
+            }
+        }
+    }
+    return;
+}
 
-
+void simplifie_tree(diff_tree_element * element) {
+    while (is_change == 1) {
+    is_change = 0;
+    consts_eval(element);
+    delete_fictive_nodes(element);
+    }
+    return;
+}
