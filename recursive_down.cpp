@@ -1,10 +1,6 @@
 #include <stdlib.h>
 #include <stdio.h>
-#include "deff_dump.h"
 #include <string.h>
-#include "tree.h"
-#include "deff_dump.h"
-#include <math.h>
 #include "diff.h"
 #include "recursive_down.h"
 
@@ -16,7 +12,7 @@ static diff_tree_element * get_number() {
         value = value * 10 + str[ip] - '0';
         ip++;
     }
-    return int_node_ctor(value);
+    return NUMBER_NODE(value);
 }
 
 static diff_tree_element * get_variable() {
@@ -29,11 +25,11 @@ static diff_tree_element * get_variable() {
 }
 static diff_tree_element * get_long_op() {
     if(('a' <= str[ip] && str[ip] <= 'z' && str[ip] != 'x')) {
-        char op[op_name_len] = "";
+        char op[OP_NAME_LEN] = "";
         int i = 0;
-        while ('a' <= str[ip] && str[ip] <= 'z') {
-            op[i] = str[ip];
-            i++;
+        while ('a' <= str[ip] && str[ip] <= 'z') { // opname len check 
+            op[i] = str[ip];                        // sscanf
+            i++;    
             ip++;
         }
         if (strcmp(op, "sin") == 0) {
@@ -66,6 +62,7 @@ static diff_tree_element * get_bracket() {
         return get_long_op();
     }
 }
+
 static diff_tree_element * get_pow() {
     diff_tree_element * value = get_bracket();
     while (str[ip] == '^') {
@@ -76,7 +73,7 @@ static diff_tree_element * get_pow() {
     return value;
 }
 
-static diff_tree_element * get_add_or_sub() {   
+static diff_tree_element * get_mul_or_div() {   
     diff_tree_element * value = get_pow();
     while (str[ip] == '*' || str[ip] == '/') {
         char op = str[ip++];
@@ -98,10 +95,10 @@ static diff_tree_element * get_add_or_sub() {
 }
 
 static diff_tree_element * get_subexpression() {
-    diff_tree_element * value = get_add_or_sub();
+    diff_tree_element * value = get_mul_or_div();
     while (str[ip] == '+' || str[ip] == '-') {
         char op = str[ip++];
-        diff_tree_element * value2 = get_add_or_sub();
+        diff_tree_element * value2 = get_mul_or_div();
         switch (op)
         {
         case '+':

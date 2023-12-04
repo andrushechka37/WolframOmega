@@ -1,17 +1,14 @@
 #pragma once
 
-
-
-const int op_name_len = 10;
-const int op_count = 8;
-const int funcs_count = 8;
-const int op_priority_mask = 240;
-const char nil = '_';
-
+const int OP_NAME_LEN = 10;
+const int OP_COUNT = 8;
+const int FUNCS_COUNT = 8;
+const int OP_PRIORITY_MASK = 240;
+const char NIL = '_';
 
 struct op_names_numbers_t {
     const double number;
-    const char name[op_name_len];
+    const char name[OP_NAME_LEN];
     const int arg_quantity;
 };
 
@@ -32,13 +29,19 @@ struct op_info {
 };
 
 union node_value {
-    op_info operetor;
+    op_info operator_info;
     double number;
 };
 
+enum types_of_node {
+    zero_t     = 0,
+    value_t    = 1,
+    operator_t = 2,
+    variable_t = 3
+};
 struct diff_tree_element {
     node_value value;
-    int type;
+    types_of_node type;
     diff_tree_element * left;
     diff_tree_element * right;
     diff_tree_element * parent;
@@ -49,12 +52,7 @@ struct diff_tree {
     int size;
 };
 
-enum types_of_node {
-    zero_t     = 0,
-    value_t    = 1,
-    operator_t = 2,
-    variable_t = 3
-};
+
 
 typedef diff_tree_element* elem_ptr;
 
@@ -89,8 +87,8 @@ typedef diff_tree_element* elem_ptr;
 #define IS_ROUND_BRACKET                                          \
     (element->type == operator_t) &&                              \
     (element->parent->type == operator_t) &&                      \
-    (op_priority(element->value.operetor.op_number,               \
-    element->parent->value.operetor.op_number) == 1)              \
+    (op_priority(element->value.operator_info.op_number,          \
+    element->parent->value.operator_info.op_number) == 1)         \
 
 
 
@@ -116,7 +114,6 @@ double tree_eval(diff_tree_element * element, double x_value);
 
 inline int error_status = 0;
 
-
-#define ELEM_OP_NUM element->value.operetor.op_number
+#define ELEM_OP_NUM element->value.operator_info.op_number
 #define ELEM_DOUBLE element->value.number
-#define ELEM_OP_ARG element->value.operetor.arg_quantity
+#define ELEM_OP_ARG element->value.operator_info.arg_quantity

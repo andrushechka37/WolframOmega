@@ -2,7 +2,7 @@
 #include "tree.h"
 
 inline int ip = 0;
-inline const char * str = "sin((5*x)^4)";
+inline const char * str = "sin(cos(x^2))";
 
 
 diff_tree_element * get_expression();

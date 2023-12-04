@@ -1,8 +1,7 @@
 #pragma once
 #include "tree.h"
 
-
-#define int_node_ctor(value) node_ctor(value, value_t, NULL, NULL, NULL)
+#define NUMBER_NODE(value) node_ctor(value, value_t, NULL, NULL, NULL)
 
 #define ADD(left, right) node_ctor(OP_ADD, operator_t, left, right, NULL)
 #define SUB(left, right) node_ctor(OP_SUB, operator_t, left, right, NULL)
@@ -24,4 +23,4 @@ diff_tree_element * copy_node(diff_tree_element * original);
 
 void consts_eval(diff_tree_element * element);
 void delete_fictive_nodes(diff_tree_element * element);
-void tree_simplifie(diff_tree_element * element);
+void tree_simplify(diff_tree_element * element);

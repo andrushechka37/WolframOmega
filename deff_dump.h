@@ -1,7 +1,7 @@
 #pragma once
 #include "tree.h"
 
-#define hard_visualize 1
+#define hard_visualize 0
 
 void print_tree_inorder(diff_tree_element * root);
 void tree_visualize(diff_tree_element * element);

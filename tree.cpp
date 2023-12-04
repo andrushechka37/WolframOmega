@@ -4,19 +4,18 @@
 #include <string.h>
 #include <math.h>
 
-
 static bool check_symbol(char symbol, FILE * pfile);
 static int set_type_and_value(double value, types_of_node type, diff_tree_element * element);
 static int get_op_arg_number(operations op);
 
-op_names_numbers_t op_names_numbers[op_count] = {
+op_names_numbers_t op_names_numbers[OP_COUNT] = {
         {OP_ADD, "+",       2},
         {OP_SUB, "-",       2},
         {OP_MUL, "*",       2},
         {OP_DIV, "/",       2},
-        {OP_SQRT, "sqrt", 1},
-        {OP_SIN, "sin",   1},
-        {OP_COS, "cos",   1},
+        {OP_SQRT, "sqrt",   1},
+        {OP_SIN, "sin",     1},
+        {OP_COS, "cos",     1},
         {OP_POW, "^",       2}
 };
 
@@ -32,7 +31,7 @@ diff_tree_element * node_ctor(double value, types_of_node type, diff_tree_elemen
         break;
     case operator_t:
         ELEM_OP_NUM = (operations) value;
-        element->value.operetor.arg_quantity = get_op_arg_number((operations) value);
+        element->value.operator_info.arg_quantity = get_op_arg_number((operations) value);
         break;
     }
     element->left = left;
@@ -58,7 +57,7 @@ int get_op_number(char * name) { // do it faster with hashes instead of strcmp
     int i = 0;
     while (strcmp(op_names_numbers[i].name, name)) {
         i++;
-        if (i > funcs_count) {
+        if (i > FUNCS_COUNT) {
             return -1;
         }
     }
@@ -74,7 +73,7 @@ int read_node_data(elem_ptr * link, FILE * pfile, elem_ptr * parent) {  //more c
         read_node_data(LEFT, pfile, link);
 
         double value = 0;                  // error obrabotka
-        char op[op_name_len] = {};
+        char op[OP_NAME_LEN] = {};
         char x = '0';
 
         if (fscanf(pfile, "%lf", &value) == 1) {
@@ -88,7 +87,7 @@ int read_node_data(elem_ptr * link, FILE * pfile, elem_ptr * parent) {  //more c
         read_node_data(RIGHT, pfile, link);
         REQUIRE_SYMBOL(')');
 
-    } else if (check_symbol(nil, pfile) == 1) {
+    } else if (check_symbol(NIL, pfile) == 1) {
         return 0;
     }
 }
@@ -130,7 +129,7 @@ int tree_verify(diff_tree_element * element) {
 
     switch (element->type) {
     case value_t:
-        if (element->left != NULL || element->right != NULL) {   // if number node has left and right NULL clilds
+        if (element->left != NULL || element->right != NULL) {   // if number node has left and right NULL children
             printf("%p number does not have all nulls", element);
             error_status = 1;
         }
@@ -152,7 +151,7 @@ int tree_verify(diff_tree_element * element) {
         break;
     }
 
-    if (element->left != NULL && element->right != NULL) {   // if parents clilds and childs parents are the same
+    if (element->left != NULL && element->right != NULL) {   // if parents clild and child's parent are the same
         if(element->left->parent != element || element->right->parent != element) {
         printf("%p - left parent %p - right parent %p - elemen", element->left->parent, element->right->parent, element);
         error_status = 1;
@@ -166,7 +165,7 @@ int tree_verify(diff_tree_element * element) {
 }
 
 bool op_priority(double op1, double op2) {
-    if (((int)op1 & op_priority_mask) < ((int)op2 & op_priority_mask)) {
+    if (((int)op1 & OP_PRIORITY_MASK) < ((int)op2 & OP_PRIORITY_MASK)) {
         return 1;
     }
     return 0;
@@ -177,7 +176,7 @@ void print_tex_single_equation(diff_tree_element * element, FILE * pfile) {
     if (element == NULL) {     
         return;
     }
-    if (element->value.operetor.op_number == OP_DIV) {
+    if (element->value.operator_info.op_number == OP_DIV) {
         fprintf(pfile, "\\frac{");
     }
     if (IS_ROUND_BRACKET) {
@@ -189,16 +188,16 @@ void print_tex_single_equation(diff_tree_element * element, FILE * pfile) {
     bool is_figure_bracket = 0;
     if(element->type == value_t) {
         if (element->value.number < 0) {
-             fprintf(pfile,"(%.2lf)", element->value);
+             fprintf(pfile,"(%.2lg)", element->value);
         } else {
-            fprintf(pfile,"%.2lf", element->value);
+            fprintf(pfile,"%.2lg", element->value);
         }
     } else if (element->type == operator_t) {
         if ((ELEM_OP_NUM < OP_DIV)) {
-            fprintf(pfile,"%s", get_op_symbol(element->value.operetor.op_number));
+            fprintf(pfile,"%s", get_op_symbol(element->value.operator_info.op_number));
         } else {
             is_figure_bracket = 1;
-            switch (element->value.operetor.op_number) {
+            switch (element->value.operator_info.op_number) {
                 case OP_POW:
                     fprintf(pfile,"^{");
                     break;
@@ -206,7 +205,7 @@ void print_tex_single_equation(diff_tree_element * element, FILE * pfile) {
                     fprintf(pfile,"}{");
                     break;
                 default:
-                    fprintf(pfile,"\\%s{", get_op_symbol(element->value.operetor.op_number));
+                    fprintf(pfile,"\\%s{", get_op_symbol(element->value.operator_info.op_number));
             }
         }
     } else if ((int)element->type == variable_t) {
@@ -313,7 +312,7 @@ static int set_type_and_value(double value, types_of_node type, diff_tree_elemen
         ELEM_OP_ARG = get_op_arg_number((operations)value);
 
     }
-    element->type = (int) type;
+    element->type = type;
     return 0;
 }
 
