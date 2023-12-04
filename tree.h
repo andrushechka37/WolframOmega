@@ -66,6 +66,7 @@ typedef diff_tree_element* elem_ptr;
 #define verify(element)                  \
     error_status = 0;                    \
     if (tree_verify(element) == 1) {     \
+        printf("error");                 \
         tree_visualize(element);         \
         return 0;                        \
     }

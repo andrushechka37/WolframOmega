@@ -2,28 +2,26 @@
 #include <stdio.h>
 #include "tree.h"
 #include "deff_dump.h"
-#include <string.h>  // delete
 #include <math.h>
 #include "diff.h"
+#include "recursive_down.h"
+#include <string.h>
 
 bool is_change = 1;
-// simplify
-// recursivni spuuuusk
+
 // error detection
 static void set_parents(diff_tree_element * root, diff_tree_element * parent);
 
 int main(void) {
-    diff_tree tree = {};
-    tree_ctor(&tree);
-    read_data(&tree);
-    //tree_visualize(tree.root);
-    diff_tree_element * tree2 = tree_diff(tree.root);
-    tree_dtor(&(tree.root));
-
-
+    diff_tree_element * tree = get_expression();
+    plog = fopen("log_file_down.txt", "w");
+    set_parents(tree, tree);
+    print_tex(tree);
+    tree_visualize(tree);
+    diff_tree_element * tree2 = tree_diff(tree);
+    tree_dtor(&tree);
     set_parents(tree2, tree2);
-    //verify(tree2);
-    tree_visualize(tree2);
+    verify(tree2);
     tree_simplifie(tree2);
     tree_visualize(tree2);
     print_tex(tree2);
@@ -56,9 +54,9 @@ diff_tree_element * tree_diff(diff_tree_element * element) {
     case OP_DIV:
         return DIV(SUB(MUL(DIF_L, COPY_R),MUL(DIF_R, COPY_L)), POW(COPY_R, int_node_ctor(2)));
     case OP_SIN:
-        return MUL(COS, DIF_R);
+        return MUL(COS(COPY_R), DIF_R);
     case OP_COS:
-        return MUL(MUL(int_node_ctor(-1), SIN), DIF_R);
+        return MUL(MUL(int_node_ctor(-1), SIN(COPY_R)), DIF_R);
     case OP_POW:
         return MUL(MUL(COPY_R, POW(COPY_L, int_node_ctor(element->right->value.number - 1))), DIF_L);
     
@@ -208,3 +206,12 @@ void tree_simplifie(diff_tree_element * element) {
     }
     return;
 }
+
+
+
+
+
+
+
+
+

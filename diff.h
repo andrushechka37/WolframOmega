@@ -10,8 +10,8 @@
 #define DIV(left, right) node_ctor(OP_DIV, operator_t, left, right, NULL)
 #define POW(left, right) node_ctor(OP_POW, operator_t, left, right, NULL)
 
-#define SIN node_ctor(OP_SIN, operator_t, NULL, COPY_R, NULL)
-#define COS node_ctor(OP_COS, operator_t, NULL, COPY_R, NULL)
+#define SIN(arg) node_ctor(OP_SIN, operator_t, NULL, arg, NULL)
+#define COS(arg) node_ctor(OP_COS, operator_t, NULL, arg, NULL)
 
 #define COPY_L copy_node(element->left)
 #define COPY_R copy_node(element->right)

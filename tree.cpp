@@ -14,9 +14,9 @@ op_names_numbers_t op_names_numbers[op_count] = {
         {OP_SUB, "-",       2},
         {OP_MUL, "*",       2},
         {OP_DIV, "/",       2},
-        {OP_SQRT, "\\sqrt", 1},
-        {OP_SIN, "\\sin",   1},
-        {OP_COS, "\\cos",   1},
+        {OP_SQRT, "sqrt", 1},
+        {OP_SIN, "sin",   1},
+        {OP_COS, "cos",   1},
         {OP_POW, "^",       2}
 };
 
@@ -206,7 +206,7 @@ void print_tex_single_equation(diff_tree_element * element, FILE * pfile) {
                     fprintf(pfile,"}{");
                     break;
                 default:
-                    fprintf(pfile,"%s{", get_op_symbol(element->value.operetor.op_number));
+                    fprintf(pfile,"\\%s{", get_op_symbol(element->value.operetor.op_number));
             }
         }
     } else if ((int)element->type == variable_t) {
