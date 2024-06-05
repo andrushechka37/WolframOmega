@@ -6,7 +6,6 @@ rules_of_my_life.txt
 graph.png
 *.o
 data.txt
-graphs
 log.html
 .DS_Store
 tex.md

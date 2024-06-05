@@ -20,6 +20,7 @@ int main(void) {
     set_parents(tree2, tree2);
     verify(tree2);
     print_tex(tree2, "not_opt.md");
+    tree_visualize(tree2);
     tree_simplify(tree2);
     tree_visualize(tree2);
     print_tex(tree2);
