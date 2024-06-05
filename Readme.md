@@ -28,4 +28,9 @@
 
 ![alt text](graphs/graph3.png)
 
-Вывод: $2*x+\frac{(\cos{x}*\cos{x}-(-1)*\sin{x}*\sin{x})}{\cos{x}^{2}}-3*x^{2}$
+Вывод: 
+
+```math
+2*x+\frac{(\cos{x}*\cos{x}-(-1)*\sin{x}*\sin{x})}{\cos{x}^{2}}-3*x^{2}
+```
+
